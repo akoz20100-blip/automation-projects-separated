@@ -1,0 +1,3 @@
+expense_id,month,apartment_id,date,category,description,amount,status,notes
+exp_0001,2026-06,apt_01,2026-06-20,supplies,Cleaning supplies,200,approved,
+

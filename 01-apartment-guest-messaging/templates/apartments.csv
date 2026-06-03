@@ -1,0 +1,4 @@
+apartment_id,apartment_name,default_check_in_time,default_check_out_time,access_guideline,checkout_guideline,airbnb_listing_url,airbnb_review_url,maintenance_contact_phone
+apt_01,Riyadh Apartment 1,15:00,12:00,"Door code and parking details","Switch off AC and leave the key",https://airbnb.com/,https://airbnb.com/,9665XXXXXXXX
+apt_02,Riyadh Apartment 2,15:00,12:00,"Door code and parking details","Switch off AC and leave the key",https://airbnb.com/,https://airbnb.com/,9665XXXXXXXX
+

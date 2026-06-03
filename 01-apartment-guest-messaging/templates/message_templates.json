@@ -1,0 +1,9 @@
+{
+  "access_ar": "أهلا {{guest_name}}، تم تأكيد حجزك في {{apartment_name}}.\n\nتاريخ الدخول: {{check_in_date}}\nوقت الدخول: {{check_in_time}}\n\nإرشادات الدخول:\n{{access_guideline}}\n\nإذا احتجت أي مساعدة، تواصل معنا هنا.",
+  "checkout_ar": "أهلا {{guest_name}}، تذكير بسيط بأن موعد الخروج من {{apartment_name}} هو {{check_out_date}} الساعة {{check_out_time}}.\n\nإرشادات الخروج:\n{{checkout_guideline}}\n\nشكرا لاختيارك الإقامة معنا.",
+  "review_ar": "أهلا {{guest_name}}، سعدنا باستضافتك في {{apartment_name}}.\n\nإذا كانت تجربتك جيدة، نقدر تكتب لنا تقييمك في Airbnb:\n{{airbnb_review_url}}\n\nشكرا لك.",
+  "access_en": "Hello {{guest_name}}, your reservation at {{apartment_name}} is confirmed.\n\nCheck-in date: {{check_in_date}}\nCheck-in time: {{check_in_time}}\n\nAccess instructions:\n{{access_guideline}}\n\nIf you need help, message us here.",
+  "checkout_en": "Hello {{guest_name}}, this is a quick reminder that checkout from {{apartment_name}} is on {{check_out_date}} at {{check_out_time}}.\n\nCheckout instructions:\n{{checkout_guideline}}\n\nThank you for staying with us.",
+  "review_en": "Hello {{guest_name}}, we were happy to host you at {{apartment_name}}.\n\nIf you enjoyed your stay, we would appreciate your Airbnb review:\n{{airbnb_review_url}}\n\nThank you."
+}
+

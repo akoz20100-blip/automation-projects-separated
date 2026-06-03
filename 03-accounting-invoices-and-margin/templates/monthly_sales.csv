@@ -1,0 +1,3 @@
+month,apartment_id,nights_booked,gross_sales,platform_fees,cleaning_costs,maintenance_costs,other_costs,net_sales,profit,margin_percent
+2026-06,apt_01,12,5000,750,400,300,200,4250,3350,67
+
