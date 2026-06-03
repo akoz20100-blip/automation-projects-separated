@@ -1,0 +1,11 @@
+{
+  "guest_name": "محمد العتيبي",
+  "guest_phone": "+966 51 234 5678",
+  "guest_phone_confidence": "high",
+  "check_in_date": "2026-06-10",
+  "check_out_date": "2026-06-13",
+  "check_in_time": "15:00",
+  "check_out_time": "12:00",
+  "reservation_code": "HMABCDEFG",
+  "source": "airbnb"
+}

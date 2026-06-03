@@ -1,18 +1,28 @@
 # Apartment Guest Messaging Plan
 
-## Main Workflow
+## Main Workflow (Phase 2)
 
 ```text
-Reservation row in Google Sheets
+Booking screenshot
         |
         v
-Make.com Watch New Rows
+POST /api/intake/ocr  (OCR extract: name, phone, dates)
         |
         v
-Cloud API /api/reservations/prepare-messages
+Reservations row created  ->  HOST CONFIRMS  (ocr_needs_review = false)
         |
         v
-Google Sheets update + WhatsApp links
+Make.com Watch Rows (confirmed)
+        |
+        v
+POST /api/messages/send {access}  ->  WhatsApp Cloud API template + landing link
+        |
+        v
+MessageLog (idempotent)  +  delivery status via webhook
+
+Daily schedulers:
+  09:00  GET /api/messages/due?type=checkout -> send {checkout}  (night before)
+  10:00  GET /api/messages/due?type=review   -> send {review}    (day after)
 ```
 
 ## Messages
@@ -50,18 +60,25 @@ Purpose:
 
 - Ask guest to leave Airbnb review.
 
-## Phase 1 Rules
+## Phase 1 Rules (fallback)
 
-- Generate `wa.me` links only.
+- `WHATSAPP_MODE=manual_link` generates `wa.me` links only.
 - Owner or responsible person manually sends the message.
-- Save every generated message in `MessageLog`.
 - Do not use unofficial WhatsApp automation.
 
-## Phase 2 Rules
+## Phase 2 Rules (current)
 
-- Add WhatsApp Business Cloud API.
-- Use approved template messages for outbound reminders.
-- Keep manual link fallback.
+- Sending uses the official **WhatsApp Business Cloud API** with approved
+  **templates** (all three messages are business-initiated → templates required;
+  free-form text only within a guest's 24h window).
+- Booking intake is **screenshot OCR** (provider/model configurable) — Airbnb
+  exposes no phone API.
+- **Human-confirm gate**: a reservation with `ocr_needs_review = true` is not
+  auto-sent.
+- **Idempotency**: `MessageLog` prevents sending the same
+  `(reservation_id, message_type)` twice.
+- Keep the manual `wa.me` link fallback.
+- Save every send in `MessageLog`.
 
 ## Required Google Sheets
 

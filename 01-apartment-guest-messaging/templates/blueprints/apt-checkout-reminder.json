@@ -1,0 +1,55 @@
+{
+  "name": "APT - Checkout Reminder",
+  "flow": [
+    {
+      "id": 1,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {},
+      "mapper": {
+        "url": "https://YOUR-APP.vercel.app/api/messages/due?type=checkout",
+        "method": "get",
+        "headers": [{ "name": "Authorization", "value": "Bearer YOUR_API_SECRET" }],
+        "parseResponse": true
+      },
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicFeeder",
+      "version": 1,
+      "mapper": { "array": "{{1.body.reservations}}" },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {},
+      "mapper": {
+        "url": "https://YOUR-APP.vercel.app/api/messages/send",
+        "method": "post",
+        "headers": [
+          { "name": "Authorization", "value": "Bearer YOUR_API_SECRET" },
+          { "name": "Content-Type", "value": "application/json" }
+        ],
+        "bodyType": "raw",
+        "contentType": "application/json",
+        "data": "{\n  \"reservation_id\": \"{{2.reservation_id}}\",\n  \"message_type\": \"checkout\"\n}"
+      },
+      "metadata": { "designer": { "x": 600, "y": 0 } }
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "sequential": false
+    },
+    "scheduling": { "type": "indefinitely", "interval": 86400, "time": "09:00", "timezone": "Asia/Riyadh" },
+    "designer": { "orphans": [] }
+  }
+}

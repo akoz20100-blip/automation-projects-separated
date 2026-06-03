@@ -1,5 +1,33 @@
 # Make.com Scenarios
 
+Exported blueprints live in `templates/blueprints/`. Validate any edited
+blueprint with the Make MCP (`validate_blueprint_schema`,
+`validate_module_configuration`, `validate_scheduling_schema`) before importing.
+
+## Scenario 0: OCR Intake (optional)
+
+Name:
+
+```text
+APT - OCR Intake
+```
+
+Trigger:
+
+```text
+Make custom webhook (host uploads a booking screenshot, e.g. from Telegram/phone)
+```
+
+Steps:
+
+1. Receive the image.
+2. HTTP POST (multipart) to Cloud API `/api/intake/ocr`.
+3. Create a `Reservations` row with the extracted fields,
+   `ocr_needs_review = true`, `access_message_status = pending`.
+4. Notify the host to review/confirm (especially the phone number).
+
+> If the host enters bookings directly into the sheet, this scenario is not needed.
+
 ## Scenario 1: New Reservation
 
 Name:
@@ -19,21 +47,19 @@ Filters:
 
 - `status = confirmed`
 - `guest_phone is not empty`
+- `ocr_needs_review = false`  (human-confirm gate)
 - `access_message_status = pending`
 
 Steps:
 
-1. Watch new row in `Reservations`.
-2. Search `Apartments` by `apartment_id`.
-3. HTTP POST to Cloud API:
-   - `/api/reservations/prepare-messages`
-4. Update reservation row:
-   - `access_whatsapp_link`
-   - `checkout_whatsapp_link`
-   - `review_whatsapp_link`
-   - message statuses to `ready`
-5. Add rows to `MessageLog`.
-6. Notify owner/admin with access message WhatsApp link.
+1. Watch new/updated row in `Reservations`.
+2. HTTP POST to Cloud API `/api/messages/send` with
+   `{ "reservation_id": ..., "message_type": "access" }`.
+3. Update reservation row:
+   - `wa_access_message_id`
+   - `access_message_status = accepted` (or `ready` in manual_link mode)
+4. The Cloud API writes the `MessageLog` row itself.
+5. (Optional) Notify owner/admin.
 
 ## Scenario 2: Checkout Reminder
 
@@ -58,13 +84,10 @@ Filters:
 
 Steps:
 
-1. Search due reservation rows.
-2. HTTP POST to Cloud API:
-   - `/api/reservations/due-message`
-   - `message_type = checkout`
-3. Update `checkout_whatsapp_link`.
-4. Set `checkout_message_status = ready`.
-5. Notify owner/admin with WhatsApp link.
+1. HTTP GET Cloud API `/api/messages/due?type=checkout`.
+2. Iterate the returned reservations.
+3. For each, HTTP POST `/api/messages/send` with `message_type = checkout`.
+4. Update `wa_checkout_message_id` and `checkout_message_status`.
 
 ## Scenario 3: Review Reminder
 
@@ -89,32 +112,30 @@ Filters:
 
 Steps:
 
-1. Search due reservation rows.
-2. HTTP POST to Cloud API:
-   - `/api/reservations/due-message`
-   - `message_type = review`
-3. Update `review_whatsapp_link`.
-4. Set `review_message_status = ready`.
-5. Notify owner/admin with WhatsApp link.
+1. HTTP GET Cloud API `/api/messages/due?type=review`.
+2. Iterate the returned reservations.
+3. For each, HTTP POST `/api/messages/send` with `message_type = review`.
+4. Update `wa_review_message_id` and `review_message_status`.
 
-## Scenario 4: Manual Send Confirmation
+## Scenario 4: Delivery Status / Failure Alert
 
 Name:
 
 ```text
-APT - Message Sent Confirmation
+APT - Delivery Status
 ```
 
 Trigger:
 
 ```text
-Google Sheets > Watch Updated Rows
-Sheet: Reservations or MessageLog
+Google Sheets > Watch Updated Rows (MessageLog)
 ```
 
 Steps:
 
-1. Detect message status changed to `sent`.
-2. Save `sent_at`.
-3. Prevent duplicate reminders.
+1. Delivery-status callbacks land on the Cloud API webhook
+   (`/api/webhooks/whatsapp`), which updates `MessageLog` status
+   (`accepted -> sent -> delivered -> read`, or `failed`).
+2. This scenario watches `MessageLog` for `status = failed` and alerts the host.
+3. Idempotency is handled by the Cloud API, so re-runs never double-send.
 

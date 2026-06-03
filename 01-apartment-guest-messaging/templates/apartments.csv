@@ -1,4 +1,3 @@
-apartment_id,apartment_name,default_check_in_time,default_check_out_time,access_guideline,checkout_guideline,airbnb_listing_url,airbnb_review_url,maintenance_contact_phone
-apt_01,Riyadh Apartment 1,15:00,12:00,"Door code and parking details","Switch off AC and leave the key",https://airbnb.com/,https://airbnb.com/,9665XXXXXXXX
-apt_02,Riyadh Apartment 2,15:00,12:00,"Door code and parking details","Switch off AC and leave the key",https://airbnb.com/,https://airbnb.com/,9665XXXXXXXX
-
+apartment_id,apartment_name,default_check_in_time,default_check_out_time,access_guideline,checkout_guideline,airbnb_listing_url,airbnb_review_url,maintenance_contact_phone,entrance_photo_url,video_url,building_info,landing_lang_default
+apt_01,Riyadh Apartment 1,15:00,12:00,"رمز الباب 1234، المصعد للدور الثالث","اطفئ المكيف واترك المفتاح في الدرج",https://airbnb.com/,https://airbnb.com/,9665XXXXXXXX,https://example.com/apt01-entrance.jpg,https://youtu.be/XXXXXXXXXXX,"العمارة بجانب الصيدلية، الموقف رقم 7",ar
+apt_02,Riyadh Apartment 2,15:00,12:00,"رمز الباب 5678، الدور الأول","اطفئ المكيف واترك المفتاح في الدرج",https://airbnb.com/,https://airbnb.com/,9665XXXXXXXX,https://example.com/apt02-entrance.jpg,https://youtu.be/YYYYYYYYYYY,"مدخل جانبي، الموقف رقم 3",ar

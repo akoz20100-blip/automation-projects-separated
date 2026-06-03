@@ -8,26 +8,38 @@ Current business context:
 
 - Two apartments.
 - Reservations come from Airbnb.
-- Guest phone number is visible after booking.
-- No WhatsApp Business Cloud API yet.
-- Start with manual WhatsApp links from Google Sheets and Make.com.
+- Airbnb has no public API exposing the guest's full phone number (iCal gives
+  dates only). So booking intake is a **screenshot read by OCR** (or manual
+  entry), with a human confirmation step.
+- Sending is **automatic via the WhatsApp Business Cloud API** using approved
+  templates, with `wa.me` manual links as a fallback until templates are approved.
 
-## Phase 1 Output
+## Phase 2 — Automatic Sending (current)
 
-When a reservation is added to Google Sheets:
+When a booking arrives:
 
-1. Make.com detects the new row.
-2. Make.com calls Cloud API.
-3. Cloud API validates data.
-4. Cloud API returns WhatsApp links for:
-   - Access guideline.
-   - Checkout reminder.
-   - Review reminder.
-5. Make.com updates Google Sheets and logs messages.
+1. The host uploads a booking **screenshot** → `POST /api/intake/ocr` extracts
+   guest name, phone and dates (OpenAI-compatible vision model; provider/model
+   configurable). Result is flagged `needs_review` when anything is uncertain.
+2. A `Reservations` row is created; the host **confirms** it
+   (`ocr_needs_review = false`).
+3. Make.com detects the confirmed row → `POST /api/messages/send` sends the
+   **access** message (WhatsApp template) with the **landing page** link.
+4. Daily schedules send the **checkout reminder** (night before) and the
+   **review** request (day after) via `GET /api/messages/due` + send.
+5. Every send is recorded in `MessageLog` (idempotent — no double sends).
 
-## Future Upgrade
+The **landing page** (`GET /api/landing/:apartment_id`) is a lightweight,
+brand-themeable guide with the building entrance photo, a how-to-enter video, and
+building info.
 
-After WhatsApp Business Cloud API is ready, switch from `manual_link` to `cloud_api`.
+The working implementation is in **`service/`** (Node.js + TypeScript).
+
+## Modes
+
+- `WHATSAPP_MODE=manual_link` — returns `wa.me` links (no credentials needed);
+  use until templates are approved.
+- `WHATSAPP_MODE=cloud_api` — sends approved templates via the Meta Graph API.
 
 ## Files
 
@@ -37,9 +49,14 @@ project-plan.md
 make-scenarios.md
 cloud-api.md
 commands.md
+whatsapp-templates.md
+landing-page.md
 prompts/cloud-code-prompt.md
+prompts/ocr-extraction-prompt.md
 templates/reservations.csv
 templates/apartments.csv
 templates/message_templates.json
+templates/blueprints/*.json        (Make.com scenario blueprints)
+service/                            (the Cloud API implementation)
 ```
 

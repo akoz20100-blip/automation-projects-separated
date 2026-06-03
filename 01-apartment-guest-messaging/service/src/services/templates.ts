@@ -1,0 +1,112 @@
+/**
+ * Message rendering + WhatsApp template parameter mapping.
+ *
+ * The free-form strings below mirror ../../templates/message_templates.json
+ * (the documented source of truth). They are used directly for `manual_link`
+ * mode and to PREVIEW the text. For `cloud_api` mode, WhatsApp uses positional
+ * template parameters ({{1}}, {{2}}, ...) — `buildTemplateParams` maps the named
+ * placeholders to those positions, kept in sync with whatsapp-templates.md.
+ */
+
+import type { Apartment, Language, MessageType, Reservation } from "../types.js";
+import { env } from "../config/env.js";
+
+type TemplateKey = `${MessageType}_${Language}`;
+
+export const MESSAGE_TEMPLATES: Record<TemplateKey, string> = {
+  access_ar:
+    "أهلا {{guest_name}}، تم تأكيد حجزك في {{apartment_name}}.\n\nتاريخ الدخول: {{check_in_date}}\nوقت الدخول: {{check_in_time}}\n\nإرشادات الدخول:\n{{access_guideline}}\n\nدليل الدخول والمبنى (صورة المدخل وفيديو الشرح):\n{{landing_url}}",
+  checkout_ar:
+    "أهلا {{guest_name}}، تذكير بسيط بأن موعد الخروج من {{apartment_name}} هو {{check_out_date}} الساعة {{check_out_time}}.\n\nإرشادات الخروج:\n{{checkout_guideline}}\n\nشكرا لاختيارك الإقامة معنا.",
+  review_ar:
+    "أهلا {{guest_name}}، سعدنا باستضافتك في {{apartment_name}}.\n\nإذا كانت تجربتك جيدة، نقدر تكتب لنا تقييمك في Airbnb:\n{{airbnb_review_url}}\n\nشكرا لك.",
+  access_en:
+    "Hello {{guest_name}}, your reservation at {{apartment_name}} is confirmed.\n\nCheck-in date: {{check_in_date}}\nCheck-in time: {{check_in_time}}\n\nAccess instructions:\n{{access_guideline}}\n\nBuilding & access guide (entrance photo + how-to-enter video):\n{{landing_url}}",
+  checkout_en:
+    "Hello {{guest_name}}, this is a quick reminder that checkout from {{apartment_name}} is on {{check_out_date}} at {{check_out_time}}.\n\nCheckout instructions:\n{{checkout_guideline}}\n\nThank you for staying with us.",
+  review_en:
+    "Hello {{guest_name}}, we were happy to host you at {{apartment_name}}.\n\nIf you enjoyed your stay, we would appreciate your Airbnb review:\n{{airbnb_review_url}}\n\nThank you.",
+};
+
+/** Build the public landing-page URL for an apartment. */
+export function landingUrl(apartmentId: string, lang: Language): string {
+  const base = env.landing.baseUrl.replace(/\/$/, "");
+  return `${base}/api/landing/${encodeURIComponent(apartmentId)}?lang=${lang}`;
+}
+
+function fill(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => vars[key] ?? "");
+}
+
+/** Variables available to every template, derived from reservation + apartment. */
+export function templateVars(
+  reservation: Reservation,
+  apartment: Apartment,
+): Record<string, string> {
+  const lang = reservation.guest_language;
+  return {
+    guest_name: reservation.guest_name,
+    apartment_name: reservation.apartment_name || apartment.apartment_name,
+    check_in_date: reservation.check_in_date,
+    check_out_date: reservation.check_out_date,
+    check_in_time: reservation.check_in_time || apartment.default_check_in_time,
+    check_out_time: reservation.check_out_time || apartment.default_check_out_time,
+    access_guideline: apartment.access_guideline || "",
+    checkout_guideline: apartment.checkout_guideline || "",
+    airbnb_review_url:
+      reservation.airbnb_review_url || apartment.airbnb_review_url || "https://airbnb.com/",
+    landing_url: landingUrl(reservation.apartment_id, lang),
+  };
+}
+
+/** Render the full free-form message text for preview / manual_link mode. */
+export function renderText(
+  type: MessageType,
+  reservation: Reservation,
+  apartment: Apartment,
+): string {
+  const lang = reservation.guest_language;
+  const key = `${type}_${lang}` as TemplateKey;
+  return fill(MESSAGE_TEMPLATES[key], templateVars(reservation, apartment));
+}
+
+/** Resolve the approved WhatsApp template name for a type + language. */
+export function templateName(type: MessageType, lang: Language): string {
+  return env.whatsapp.templates[type][lang];
+}
+
+/**
+ * Ordered body parameters for the WhatsApp template, matching the positional
+ * {{1}}..{{n}} placeholders defined in whatsapp-templates.md.
+ *
+ * The landing/review link is passed as a plain text body parameter (not a
+ * dynamic URL button) to avoid Meta's same-base-domain constraint on buttons
+ * and to keep a single approvable template per apartment.
+ */
+export function bodyParams(
+  type: MessageType,
+  reservation: Reservation,
+  apartment: Apartment,
+): string[] {
+  const v = templateVars(reservation, apartment);
+  switch (type) {
+    case "access":
+      // {{1}}=guest_name {{2}}=apartment_name {{3}}=check_in_date
+      // {{4}}=check_in_time {{5}}=access_guideline {{6}}=landing_url
+      return [
+        v.guest_name!,
+        v.apartment_name!,
+        v.check_in_date!,
+        v.check_in_time!,
+        v.access_guideline!,
+        v.landing_url!,
+      ];
+    case "checkout":
+      // {{1}}=guest_name {{2}}=apartment_name {{3}}=check_out_date
+      // {{4}}=check_out_time {{5}}=checkout_guideline
+      return [v.guest_name!, v.apartment_name!, v.check_out_date!, v.check_out_time!, v.checkout_guideline!];
+    case "review":
+      // {{1}}=guest_name {{2}}=apartment_name {{3}}=airbnb_review_url
+      return [v.guest_name!, v.apartment_name!, v.airbnb_review_url!];
+  }
+}

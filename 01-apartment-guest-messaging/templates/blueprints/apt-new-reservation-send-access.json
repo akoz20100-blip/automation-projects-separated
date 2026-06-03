@@ -1,0 +1,75 @@
+{
+  "name": "APT - New Reservation - Send Access",
+  "flow": [
+    {
+      "id": 1,
+      "module": "google-sheets:watchRows",
+      "version": 2,
+      "parameters": {
+        "spreadsheetId": "YOUR_GOOGLE_SHEETS_ID",
+        "sheetId": "Reservations",
+        "tableFirstRow": "A1",
+        "includesHeaders": true,
+        "limit": 10
+      },
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "filter": {
+        "name": "confirmed + reviewed + pending",
+        "conditions": [
+          [
+            { "a": "{{1.status}}", "o": "text:equal", "b": "confirmed" },
+            { "a": "{{1.guest_phone}}", "o": "exist" },
+            { "a": "{{1.ocr_needs_review}}", "o": "text:equal", "b": "false" },
+            { "a": "{{1.access_message_status}}", "o": "text:equal", "b": "pending" }
+          ]
+        ]
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {},
+      "mapper": {
+        "url": "https://YOUR-APP.vercel.app/api/messages/send",
+        "method": "post",
+        "headers": [
+          { "name": "Authorization", "value": "Bearer YOUR_API_SECRET" },
+          { "name": "Content-Type", "value": "application/json" }
+        ],
+        "bodyType": "raw",
+        "contentType": "application/json",
+        "data": "{\n  \"reservation_id\": \"{{1.reservation_id}}\",\n  \"message_type\": \"access\"\n}"
+      },
+      "metadata": { "designer": { "x": 600, "y": 0 } }
+    },
+    {
+      "id": 4,
+      "module": "google-sheets:updateRow",
+      "version": 2,
+      "parameters": {
+        "spreadsheetId": "YOUR_GOOGLE_SHEETS_ID",
+        "sheetId": "Reservations"
+      },
+      "mapper": {
+        "values": {
+          "access_message_status": "{{3.body.status}}",
+          "wa_access_message_id": "{{3.body.message_id}}"
+        }
+      },
+      "metadata": { "designer": { "x": 900, "y": 0 } }
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": { "roundtrips": 1, "maxErrors": 3, "autoCommit": true },
+    "designer": { "orphans": [] }
+  }
+}
