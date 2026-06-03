@@ -1,5 +1,11 @@
 # Project 02: Maintenance Customer Care
 
+**Capture every maintenance request and hand it to the right person as a ready-to-send WhatsApp message.**
+
+> **At a glance** — **Status:** Phase 1, manual `wa.me` links · **Stack:** Make.com → Cloud API → WhatsApp · **Feeds:** accounting project (maintenance costs)
+
+↩ Back to [all projects](../README.md)
+
 ## Goal
 
 Capture maintenance requests and route them to the responsible local person or provider.
@@ -22,13 +28,11 @@ When a maintenance request is added:
 
 ## Files
 
-```text
-README.md
-project-plan.md
-make-scenarios.md
-cloud-api.md
-commands.md
-prompts/cloud-code-prompt.md
-templates/maintenance_requests.csv
-```
+- [`README.md`](README.md) — this overview
+- [`project-plan.md`](project-plan.md) — phased build plan
+- [`make-scenarios.md`](make-scenarios.md) — Make.com scenario setup
+- [`cloud-api.md`](cloud-api.md) — Cloud API contract
+- [`commands.md`](commands.md) — Cloud Code commands
+- [`prompts/cloud-code-prompt.md`](prompts/cloud-code-prompt.md) — Cloud Code handoff prompt
+- [`templates/maintenance_requests.csv`](templates/maintenance_requests.csv) — maintenance request input sheet
 
