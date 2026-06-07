@@ -78,7 +78,13 @@ export const guide = {
   },
 
   /** WhatsApp help number in intl format e.g. "9665XXXXXXXX". Empty -> placeholder, no fake number. */
-  whatsapp: "",
+  whatsapp: "966548499870",
+
+  /** Contact email shown in the help section. */
+  email: "Dimora.residence.sa@gmail.com",
+
+  /** Google Maps link to the building — opens directions straight to the location. */
+  mapsUrl: "https://maps.google.com/?q=24.643702,46.550613",
 
   /** Default times (overridden by the sheet row when present). 24h format. */
   checkInTime: "16:00",
@@ -97,8 +103,12 @@ export const guide = {
   media: {
     /** Exterior building image for the hero. Falls back to the apartment entrance photo. */
     heroImageUrl: `${MEDIA_BASE}/living-room.jpg`,
+    /** Soft, blurred background behind the hero so it isn't plain white. */
+    heroBackgroundUrl: `${MEDIA_BASE}/living-room-2.jpg`,
     /** The ANNOTATED exterior image (entrance/parking/first-floor labels) for check-in. */
     wayfindingImageUrl: `${MEDIA_BASE}/wayfinding.png`,
+    /** Stylised, brand-tinted location map for the contact section. */
+    mapImageUrl: `${MEDIA_BASE}/location-map.jpg`,
     /**
      * Check-in video. YouTube (incl. Shorts)/Vimeo link -> embed; a direct
      * .mp4 -> <video>. Falls back to the sheet video_url.

@@ -72,6 +72,9 @@ const COPY = {
     nearbyTitle: "حولك في حي لبن",
     helpTitle: "تحتاج مساعدة؟",
     helpDesc: "نحن في خدمتك على مدار الساعة.",
+    email: "البريد الإلكتروني",
+    locationTitle: "الموقع",
+    directions: "الاتجاهات عبر خرائط جوجل",
     whatsapp: "تواصل عبر واتساب",
     whatsappSoon: "سيتم إضافة رقم التواصل هنا",
     maintenance: "للطوارئ والصيانة",
@@ -106,6 +109,9 @@ const COPY = {
     nearbyTitle: "Around You in Laban",
     helpTitle: "Need Help?",
     helpDesc: "We are here for you around the clock.",
+    email: "Email",
+    locationTitle: "Location",
+    directions: "Open in Google Maps",
     whatsapp: "Contact on WhatsApp",
     whatsappSoon: "A contact number will be added here",
     maintenance: "Maintenance & emergencies",
@@ -140,6 +146,7 @@ const ICONS: Record<string, string> = {
   store: '<path d="M4 9h16l-1-5H5L4 9ZM4 9v11h16V9M9 20v-5h6v5"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   phone: '<path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   whatsapp: '<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Z"/><path d="M8.5 8.5c0 4 3 6.5 6.5 6.5.7 0 1-.4 1-1l-.3-1.4-1.7-.6-.9 1c-1.2-.5-2.1-1.4-2.6-2.6l1-.9-.6-1.7L9.5 7.5c-.6 0-1 .3-1 1Z"/>',
   pin: '<path d="M12 21s7-5.5 7-11a7 7 0 0 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
@@ -202,8 +209,10 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 
   const brandName = pick(lang, guide.brand.nameAr, guide.brand.nameEn);
   const heroImg = guide.media.heroImageUrl || apartment.entrance_photo_url || "";
+  const heroBgUrl = guide.media.heroBackgroundUrl || "";
   const wayImg = guide.media.wayfindingImageUrl || apartment.entrance_photo_url || "";
   const videoUrl = guide.media.videoUrl || apartment.video_url || "";
+  const mapImg = guide.media.mapImageUrl || "";
   const checkInTime = apartment.default_check_in_time || guide.checkInTime;
   const checkOutTime = apartment.default_check_out_time || guide.checkOutTime;
 
@@ -218,7 +227,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
       )
     : "";
   const hero = `
-  <header class="hero">
+  <header class="hero${heroBgUrl ? " hero--bg" : ""}"${heroBgUrl ? ` style="--hero-bg:url('${escapeHtml(heroBgUrl)}')"` : ""}>
     <div class="hero-inner">
       <div class="brandbar up" style="--d:.04s">${logo}</div>
       <span class="eyebrow up" style="--d:.14s">${escapeHtml(t.eyebrow)}</span>
@@ -273,7 +282,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const checkin = `
   <section id="checkin" class="wrap reveal">
     ${secHead("door", COPY.ar.checkinTitle, COPY.en.checkinTitle)}
-    <div class="way">${mockFrame(media(wayImg, pick(lang, "صورة توضيح المدخل والمواقف", "Entrance & parking guide"), t.imgSoon, "show-img"), t.mockTitle)}</div>
+    <div class="way">${mockFrame(media(wayImg, pick(lang, "صورة توضيح المدخل والمواقف", "Entrance & parking guide"), t.imgSoon, "way-img"), t.mockTitle)}</div>
     <div class="steps">${stepCards}</div>
     ${accessBody}
   </section>`;
@@ -352,12 +361,32 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const maint = apartment.maintenance_contact_phone
     ? `<a class="btn ghost" href="tel:${escapeHtml(apartment.maintenance_contact_phone)}">${icon("phone", "btn-ic")} ${escapeHtml(t.maintenance)}</a>`
     : "";
+  const dirText = pick(lang, COPY.ar.directions, COPY.en.directions);
+  const emailLine = guide.email
+    ? `<a class="contact-line" href="mailto:${escapeHtml(guide.email)}">${icon("mail", "cl-ic")}<span>${escapeHtml(guide.email)}</span></a>`
+    : "";
+  const dirBtn = guide.mapsUrl
+    ? `<a class="btn ghost" href="${escapeHtml(guide.mapsUrl)}" target="_blank" rel="noopener">${icon("pin", "btn-ic")} ${escapeHtml(dirText)}</a>`
+    : "";
   const help = `
   <section class="wrap reveal contact">
     ${secHead("phone", COPY.ar.helpTitle, COPY.en.helpTitle)}
     <p class="sec-desc">${escapeHtml(pick(lang, COPY.ar.helpDesc, COPY.en.helpDesc))}</p>
-    <div class="actions">${waBtn}${maint}</div>
+    <div class="actions">${waBtn}${maint}${dirBtn}</div>
+    ${emailLine}
   </section>`;
+
+  // ---- Location (near the top): map image + directions ----
+  const location = guide.mapsUrl
+    ? `
+  <section id="location" class="wrap reveal">
+    ${secHead("pin", COPY.ar.locationTitle, COPY.en.locationTitle)}
+    <a class="map-card" href="${escapeHtml(guide.mapsUrl)}" target="_blank" rel="noopener" aria-label="${escapeHtml(dirText)}">
+      ${mapImg ? `<img class="map-img" src="${escapeHtml(mapImg)}" alt="${escapeHtml(pick(lang, COPY.ar.locationTitle, COPY.en.locationTitle))}" loading="lazy" decoding="async">` : ""}
+      <span class="map-cta">${icon("pin", "btn-ic")} ${escapeHtml(dirText)}</span>
+    </a>
+  </section>`
+    : "";
 
   // Client data for the D1/D2 selector.
   const unitData = JSON.stringify(
@@ -385,7 +414,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     env.landing.brandPrimaryColor && env.landing.brandPrimaryColor !== "#0E7C66"
       ? env.landing.brandPrimaryColor
       : "";
-  const accent = escapeHtml(customPrimary || "#FF5630");
+  const accent = escapeHtml(customPrimary || "#889970");
 
   return `<!DOCTYPE html>
 <html lang="${lang}" dir="${t.dir}">
@@ -398,7 +427,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 <style>
 ${FONT_CSS}
   :root{
-    --accent:${accent};--accent-dk:#E8431F;
+    --accent:${accent};--accent-dk:#5F6B4E;
     --accent-soft:color-mix(in srgb, var(--accent) 12%, #fff);
     --accent-ring:color-mix(in srgb, var(--accent) 18%, transparent);
     --ink:#1D1D1F;--body:#3F3F43;--muted:#86868B;--faint:#AEAEB2;
@@ -433,21 +462,23 @@ ${FONT_CSS}
   /* Colourful gradient pad + browser mock window */
   .pad{padding:16px;border-radius:var(--r-xl);position:relative;isolation:isolate}
   .art-hero{background:
-      radial-gradient(60% 80% at 16% 12%,rgba(167,139,250,.55),transparent 60%),
-      radial-gradient(56% 72% at 88% 16%,rgba(96,165,250,.50),transparent 60%),
-      radial-gradient(70% 80% at 74% 96%,rgba(110,231,170,.45),transparent 60%),
-      radial-gradient(64% 72% at 22% 92%,rgba(255,150,140,.42),transparent 60%),
-      #eef0f4}
+      radial-gradient(62% 80% at 18% 12%,rgba(136,153,112,.42),transparent 62%),
+      radial-gradient(58% 72% at 86% 16%,rgba(170,186,142,.40),transparent 62%),
+      radial-gradient(70% 80% at 74% 96%,rgba(118,138,96,.30),transparent 62%),
+      #eef1ea}
   .mock{border-radius:var(--r-lg);overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.7);box-shadow:var(--sh-lg)}
   .mock-bar{display:flex;align-items:center;gap:7px;padding:11px 15px;background:#fbfbfd;border-bottom:1px solid var(--line)}
   .dot{width:11px;height:11px;border-radius:50%;flex:none}
   .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
   .mock-title{margin-inline-start:9px;font-size:.76rem;color:var(--muted);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .show-img{width:100%;aspect-ratio:16/10;object-fit:cover}
+  .way-img{width:100%;height:auto;display:block}
 
   /* Hero */
-  .hero{padding:46px 20px 6px;text-align:center}
-  .hero-inner{max-width:640px;margin:0 auto}
+  .hero{position:relative;overflow:hidden;padding:46px 20px 6px;text-align:center}
+  .hero.hero--bg::before{content:"";position:absolute;inset:0;z-index:0;background-image:var(--hero-bg);background-size:cover;background-position:center;filter:blur(3px) saturate(1.12);transform:scale(1.06);opacity:.6}
+  .hero.hero--bg::after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(244,244,246,.62),rgba(244,244,246,.40) 46%,rgba(244,244,246,.78) 86%,var(--bg))}
+  .hero-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
   .brandbar{margin-bottom:18px}
   .hero .logo{filter:brightness(0);opacity:.9;max-height:118px;width:auto;max-width:64%;margin:0 auto}
   .wordmark{font-family:var(--serif);font-size:1.7rem;font-weight:700;letter-spacing:.34em;color:var(--ink)}
@@ -460,7 +491,7 @@ ${FONT_CSS}
 
   /* Buttons */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
-    background:linear-gradient(135deg,#FF7A4D,var(--accent));color:#fff;text-decoration:none;
+    background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 72%,#fff),var(--accent));color:#fff;text-decoration:none;
     font-weight:700;font-size:1rem;padding:15px 26px;border-radius:999px;border:0;cursor:pointer;
     box-shadow:0 10px 24px var(--accent-ring),inset 0 1px 0 rgba(255,255,255,.4);
     transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s}
@@ -469,7 +500,7 @@ ${FONT_CSS}
   html[dir=rtl] .btn .btn-ic{transform:scaleX(-1)}
   .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--sh-sm)}
   .btn.ghost:hover{background:#fafafa;filter:none}
-  .btn.wa{background:linear-gradient(135deg,#36d870,#1faa53);box-shadow:0 10px 24px rgba(31,170,83,.28)}
+  .btn.wa{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 72%,#fff),var(--accent));box-shadow:0 10px 24px var(--accent-ring)}
   .btn.wa.disabled{background:#d6d6da;color:#fff;cursor:default;box-shadow:none}
 
   /* Section heads (coral chip + serif two-tone) */
@@ -535,12 +566,9 @@ ${FONT_CSS}
 
   /* Colourful gradient icon tiles */
   .tile-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;
+    background:linear-gradient(150deg,color-mix(in srgb,var(--accent) 76%,#fff),var(--accent));
     box-shadow:inset 0 1px 2px rgba(255,255,255,.5),0 6px 16px rgba(17,20,24,.12)}
   .tile-ic .ic{width:22px;height:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
-  .steps .step:nth-child(4n+1) .tile-ic,.svc-grid .svc:nth-child(4n+1) .tile-ic{background:var(--art1)}
-  .steps .step:nth-child(4n+2) .tile-ic,.svc-grid .svc:nth-child(4n+2) .tile-ic{background:var(--art2)}
-  .steps .step:nth-child(4n+3) .tile-ic,.svc-grid .svc:nth-child(4n+3) .tile-ic{background:var(--art3)}
-  .steps .step:nth-child(4n) .tile-ic,.svc-grid .svc:nth-child(4n) .tile-ic{background:var(--art4)}
   .access{margin-top:16px;border-inline-start:3px solid var(--accent)}
 
   /* Video */
@@ -573,6 +601,13 @@ ${FONT_CSS}
 
   /* Contact */
   .contact .actions{display:flex;flex-direction:column;gap:12px;max-width:420px}
+  .contact-line{display:inline-flex;align-items:center;gap:9px;margin-top:14px;color:var(--muted);text-decoration:none;font-size:.95rem;word-break:break-all}
+  .contact-line .cl-ic{width:20px;height:20px;color:var(--accent);flex:none}
+  .contact-line:hover{color:var(--ink)}
+  .map-card{display:block;position:relative;margin:18px auto 0;max-width:520px;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh-lg);text-decoration:none}
+  .map-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .map-cta{position:absolute;inset-inline:14px;bottom:14px;display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 72%,#fff),var(--accent));color:#fff;font-weight:700;font-size:.98rem;padding:13px 18px;border-radius:14px;box-shadow:0 12px 26px var(--accent-ring)}
+  .map-cta .btn-ic{width:18px;height:18px}
 
   /* Floating quick action (mobile) */
   .fab{position:fixed;inset-inline:0;bottom:0;display:none;justify-content:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(244,244,246,0),var(--bg) 42%);z-index:50}
@@ -597,9 +632,10 @@ ${FONT_CSS}
 <body>
 ${hero}
 <main>
-${highlights}
 ${video}
 ${checkin}
+${location}
+${highlights}
 ${selector}
 ${info}
 ${rules}

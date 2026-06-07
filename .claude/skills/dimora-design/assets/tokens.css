@@ -3,8 +3,8 @@
  * Pair with fonts.css (Thmanyah) and components.css. */
 :root {
   /* Accent — the single bright pop. Override --accent to rebrand. */
-  --accent:#FF5630;
-  --accent-dk:#E8431F;
+  --accent:#889970;
+  --accent-dk:#5F6B4E;
   --accent-soft:color-mix(in srgb, var(--accent) 12%, #fff);
   --accent-ring:color-mix(in srgb, var(--accent) 18%, transparent);
 
@@ -35,9 +35,8 @@
   --art3:radial-gradient(120% 120% at 0% 100%,#8be59b 0%,transparent 60%),radial-gradient(120% 120% at 100% 0%,#caf07f 0%,transparent 58%),linear-gradient(135deg,#bdf0c3,#8fe08a);
   --art4:radial-gradient(120% 120% at 100% 100%,#7fd0fb 0%,transparent 60%),radial-gradient(120% 120% at 0% 0%,#a9b8ff 0%,transparent 58%),linear-gradient(135deg,#c2e7ff,#8fb6ff);
   --art-hero:
-    radial-gradient(60% 80% at 16% 12%,rgba(167,139,250,.55),transparent 60%),
-    radial-gradient(56% 72% at 88% 16%,rgba(96,165,250,.50),transparent 60%),
-    radial-gradient(70% 80% at 74% 96%,rgba(110,231,170,.45),transparent 60%),
-    radial-gradient(64% 72% at 22% 92%,rgba(255,150,140,.42),transparent 60%),
-    #eef0f4;
+    radial-gradient(62% 80% at 18% 12%,rgba(136,153,112,.42),transparent 62%),
+    radial-gradient(58% 72% at 86% 16%,rgba(170,186,142,.40),transparent 62%),
+    radial-gradient(70% 80% at 74% 96%,rgba(118,138,96,.30),transparent 62%),
+    #eef1ea;
 }

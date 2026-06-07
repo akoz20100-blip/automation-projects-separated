@@ -54,7 +54,11 @@ async function main() {
   const map = new Map<string, string>();
   map.set(guide.brand.logoUrl, await logoUri(basename(guide.brand.logoUrl)));
   map.set(guide.media.heroImageUrl, await photoUri(basename(guide.media.heroImageUrl)));
-  map.set(guide.media.wayfindingImageUrl, await photoUri(basename(guide.media.wayfindingImageUrl), 1100));
+  // Hero backdrop is now clearly visible, so encode it at a decent quality.
+  map.set(guide.media.heroBackgroundUrl, await photoUri(basename(guide.media.heroBackgroundUrl), 1200, 72));
+  // Wayfinding is now shown full-size, so encode it sharper.
+  map.set(guide.media.wayfindingImageUrl, await photoUri(basename(guide.media.wayfindingImageUrl), 1280, 78));
+  map.set(guide.media.mapImageUrl, await photoUri(basename(guide.media.mapImageUrl), 1000, 72));
 
   const inline = (html: string): string => {
     for (const [url, uri] of map) html = html.split(url).join(uri);
