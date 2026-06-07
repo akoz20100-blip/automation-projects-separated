@@ -144,6 +144,27 @@ function media(url: string, alt: string, placeholder: string, cls: string): stri
   return `<div class="${cls} ph" role="img" aria-label="${escapeHtml(alt)}">${icon("pin", "ph-ic")}<span>${escapeHtml(placeholder)}</span></div>`;
 }
 
+/** A built-in apartment (from guestGuide) so the page renders even before the
+ * Google Sheet is configured — used as a fallback by the landing route. */
+export function defaultApartment(apartmentId: string): Apartment {
+  const code = resolveCode(apartmentId);
+  const u = guide.apartments[code];
+  return {
+    apartment_id: apartmentId,
+    apartment_name: u.nameEn,
+    default_check_in_time: guide.checkInTime,
+    default_check_out_time: guide.checkOutTime,
+    access_guideline:
+      "الشقة في الدور الأول.\nرمز الباب يصلك عبر واتساب قبل وصولك.\nالمدخل من الباب المحدد في الصورة بالأعلى.",
+    checkout_guideline: "اترك المفتاح في الدرج، أطفئ المكيف والأنوار، وتأكد من إغلاق الباب.",
+    building_info: "حي لبن — الرياض. مدخل الشقق من الباب المحدد في الصورة، والمواقف على اليسار.",
+    entrance_photo_url: "",
+    video_url: "",
+    maintenance_contact_phone: "",
+    landing_lang_default: "ar",
+  };
+}
+
 export function renderLandingPage(apartment: Apartment, lang: Language): string {
   const t = COPY[lang];
   const code: ApartmentCode = resolveCode(apartment.apartment_id);
