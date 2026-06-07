@@ -21,6 +21,7 @@ export const extractedSchema = z.object({
   check_out_date: z.string().nullable(),
   check_in_time: z.string().nullable(),
   check_out_time: z.string().nullable(),
+  door_code: z.string().nullable().default(null),
   reservation_code: z.string().nullable(),
   source: z.string().nullable(),
 });
@@ -74,15 +75,23 @@ export function buildResult(raw: unknown): OcrResult {
   return { extracted, warnings, needs_review };
 }
 
+export interface OcrImage {
+  base64: string; // no data: prefix
+  mime?: string; // e.g. "image/png"
+}
+
 /**
- * Run extraction against a booking screenshot.
- * @param imageBase64 base64 (no data: prefix) of a PNG/JPG image
- * @param mime e.g. "image/png"
+ * Run extraction against ONE OR MORE screenshots of the same reservation.
+ * The model merges fields across all images (e.g. phone from the "Manage"
+ * screen + dates from the trip-detail screen).
  */
-export async function extractFromImage(
-  imageBase64: string,
-  mime = "image/png",
-): Promise<OcrResult> {
+export async function extractFromImages(images: OcrImage[]): Promise<OcrResult> {
+  if (images.length === 0) throw new Error("no images provided");
+  const imageParts = images.map((img) => ({
+    type: "image_url" as const,
+    image_url: { url: `data:${img.mime || "image/png"};base64,${img.base64}` },
+  }));
+
   const completion = await getClient().chat.completions.create({
     model: env.ocr.model,
     temperature: 0,
@@ -92,8 +101,14 @@ export async function extractFromImage(
       {
         role: "user",
         content: [
-          { type: "text", text: "Extract the reservation fields from this booking screenshot." },
-          { type: "image_url", image_url: { url: `data:${mime};base64,${imageBase64}` } },
+          {
+            type: "text",
+            text:
+              images.length > 1
+                ? "These screenshots are the SAME reservation. Merge all fields into one JSON result."
+                : "Extract the reservation fields from this booking screenshot.",
+          },
+          ...imageParts,
         ],
       },
     ],
@@ -101,4 +116,12 @@ export async function extractFromImage(
 
   const content = completion.choices[0]?.message?.content ?? "";
   return buildResult(parseModelJson(content));
+}
+
+/** Convenience wrapper for a single screenshot. */
+export async function extractFromImage(
+  imageBase64: string,
+  mime = "image/png",
+): Promise<OcrResult> {
+  return extractFromImages([{ base64: imageBase64, mime }]);
 }

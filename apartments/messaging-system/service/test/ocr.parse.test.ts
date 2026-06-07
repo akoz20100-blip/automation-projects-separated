@@ -38,4 +38,28 @@ describe("buildResult", () => {
     const result = buildResult({ ...sample, check_out_date: null });
     expect(result.needs_review).toBe(true);
   });
+
+  it("passes through the suggested door code (real Airbnb 'كود الباب المقترح')", () => {
+    const result = buildResult({
+      guest_name: "عوض",
+      guest_phone: "+966 55 560 8046",
+      guest_phone_confidence: "high",
+      check_in_date: "2026-06-07",
+      check_out_date: "2026-06-08",
+      check_in_time: "16:00",
+      check_out_time: "12:00",
+      door_code: "8046",
+      reservation_code: "HMWRZHQDDW",
+      source: "airbnb",
+    });
+    expect(result.extracted.guest_phone).toBe("966555608046");
+    expect(result.extracted.door_code).toBe("8046");
+    expect(result.extracted.guest_name).toBe("عوض");
+    expect(result.needs_review).toBe(false);
+  });
+
+  it("defaults door_code to null when absent", () => {
+    const result = buildResult(sample);
+    expect(result.extracted.door_code).toBeNull();
+  });
 });

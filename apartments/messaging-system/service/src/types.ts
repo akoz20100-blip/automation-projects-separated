@@ -60,6 +60,7 @@ export interface ExtractedReservation {
   check_out_date: string | null;
   check_in_time: string | null;
   check_out_time: string | null;
+  door_code: string | null;
   reservation_code: string | null;
   source: string | null;
 }
