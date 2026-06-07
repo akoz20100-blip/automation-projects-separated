@@ -34,6 +34,11 @@ export async function sendViaWasender(toPhone: string, text: string): Promise<Se
     headers: {
       Authorization: `Bearer ${env.wasender.apiKey}`,
       "Content-Type": "application/json",
+      Accept: "application/json",
+      // WasenderAPI sits behind Cloudflare, which blocks requests with no
+      // browser-like User-Agent (HTTP 403, CF error 1010). Send one explicitly.
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
     },
     body: JSON.stringify({ to: `+${toPhone}`, text }),
   });
