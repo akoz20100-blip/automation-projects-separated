@@ -12,6 +12,7 @@
 
 import { env } from "../config/env.js";
 import { guide, resolveCode, type ApartmentCode } from "../data/guestGuide.js";
+import { FONT_CSS } from "../assets/thmanyahFonts.js";
 import type { Apartment, Language } from "../types.js";
 
 export function escapeHtml(s: string): string {
@@ -320,13 +321,15 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 <meta name="theme-color" content="${primary}">
 <title>${escapeHtml(brandName)} — ${escapeHtml(apartment.apartment_name)}</title>
 <style>
+${FONT_CSS}
   :root{
     --green:${primary};--cream:${cream};
     --beige:#EADFC9;--wood:#9A6B43;--wood-dk:#835636;--terra:#C2703D;--navy:#21384F;
     --ink:#2B2B26;--muted:#7A7264;--card:#FFFDF8;--line:#E7DDC9;
-    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua","Times New Roman","Noto Naskh Arabic",Georgia,serif;
-    --sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Tahoma,Arial,"Noto Sans Arabic",sans-serif;
-    --r:18px;--sh:0 14px 40px rgba(60,46,28,.13);--sh-sm:0 2px 12px rgba(60,46,28,.07);
+    --serif:"Thmanyah Serif Display","Iowan Old Style",Palatino,"Noto Naskh Arabic",Georgia,serif;
+    --sans:"Thmanyah Sans",system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,Arial,sans-serif;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --r:24px;--r-lg:30px;--sh:0 14px 40px rgba(60,46,28,.13);--sh-sm:0 2px 12px rgba(60,46,28,.07);
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -336,7 +339,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
                      radial-gradient(circle at 95% 8%,rgba(194,112,61,.06),transparent 40%)}
   img{max-width:100%}
   .wrap{max-width:680px;margin:0 auto;padding:30px 18px}
-  .reveal{opacity:0;transform:translateY(20px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
   .reveal.in{opacity:1;transform:none}
 
   /* Grain texture overlay */
@@ -356,12 +359,12 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   .hero-mid{max-width:560px}
   .eyebrow{display:inline-block;font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;
     color:#e9dcc4;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(233,220,196,.4)}
-  .hero h1{font-family:var(--serif);font-size:clamp(2.3rem,8vw,3.4rem);margin:0 0 12px;font-weight:600;
-    line-height:1.1;letter-spacing:.005em;text-shadow:0 2px 24px rgba(0,0,0,.32)}
+  .hero h1{font-family:var(--serif);font-size:clamp(2.3rem,8vw,3.4rem);margin:0 0 12px;font-weight:700;
+    line-height:1.12;letter-spacing:-.01em;text-shadow:0 2px 24px rgba(0,0,0,.32)}
   .hero p{font-size:1.12rem;opacity:.96;margin:0 0 26px;max-width:30ch;text-shadow:0 1px 12px rgba(0,0,0,.4)}
 
   /* Load reveal (above the fold) */
-  .up{opacity:0;transform:translateY(22px);animation:up .9s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:var(--d,0s)}
+  .up{opacity:0;transform:translateY(22px);animation:up .9s var(--ease) forwards;animation-delay:var(--d,0s)}
   @keyframes up{to{opacity:1;transform:none}}
 
   /* Buttons */
@@ -378,7 +381,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 
   /* Section titles */
   .sec-title{display:flex;align-items:center;gap:11px;flex-wrap:wrap;font-family:var(--serif);
-    font-size:1.5rem;font-weight:600;margin:0 0 8px;color:var(--navy);letter-spacing:.005em}
+    font-size:1.5rem;font-weight:700;margin:0 0 8px;color:var(--navy);letter-spacing:-.01em}
   .sec-ic{width:26px;height:26px;color:var(--green);flex:none}
   .apt-name{font-family:var(--sans);font-size:.92rem;color:var(--muted);font-weight:500}
   .sec-desc{color:var(--muted);margin:0 0 20px}
@@ -413,7 +416,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 
   /* Check-in */
   .way{margin:16px 0 18px}
-  .way-img{width:100%;border-radius:var(--r);display:block;box-shadow:var(--sh);border:1px solid var(--line);aspect-ratio:4/3;object-fit:cover}
+  .way-img{width:100%;border-radius:var(--r-lg);display:block;box-shadow:var(--sh);border:1px solid var(--line);aspect-ratio:4/3;object-fit:cover}
   .steps{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 15px;box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:9px;transition:transform .25s ease,box-shadow .25s ease}
   .step:hover{transform:translateY(-3px);box-shadow:var(--sh)}
@@ -422,9 +425,9 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   .access{margin-top:16px;border-inline-start:4px solid var(--terra)}
 
   /* Video */
-  .video{position:relative;padding-top:56.25%;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+  .video{position:relative;padding-top:56.25%;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh)}
   .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .video-el{width:100%;border-radius:var(--r);box-shadow:var(--sh);display:block;background:#000}
+  .video-el{width:100%;border-radius:var(--r-lg);box-shadow:var(--sh);display:block;background:#000}
 
   /* Placeholders */
   .ph{background:repeating-linear-gradient(135deg,#f1ebdd,#f1ebdd 12px,#ece4d3 12px,#ece4d3 24px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);border:1px dashed #d8cdb6;text-align:center;padding:24px}
