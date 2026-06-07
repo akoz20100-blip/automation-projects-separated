@@ -373,8 +373,8 @@ ${FONT_CSS}
     padding:24px 20px calc(40px + env(safe-area-inset-bottom));color:#fff;overflow:hidden;
     background:#33433a center/cover no-repeat}
   .hero>*{position:relative;z-index:1}
-  .hero-top{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
-  .hero .logo{max-height:44px}
+  .hero-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:8px}
+  .hero .logo{max-height:148px;width:auto;max-width:78%;filter:drop-shadow(0 6px 22px rgba(0,0,0,.32))}
   .wordmark{font-family:var(--serif);font-size:1.4rem;font-weight:600;letter-spacing:.42em;padding-inline-start:4px}
   .kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;opacity:.95;
     background:rgba(255,255,255,.14);padding:6px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.22)}
