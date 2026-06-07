@@ -1,15 +1,39 @@
-# Landing Page (Guest Guide)
+# Landing Page (Dimora Guest Guide)
 
-A single, lightweight, brand-themeable page per apartment, linked from the guest
+A single, premium, mobile-first guest-guide page, linked from the guest
 messages. Served by the Cloud API at `GET /api/landing/:apartment_id?lang=ar|en`
-and rendered from the `Apartments` sheet row (`services/landing.ts`).
+and rendered by `services/landing.ts`. Arabic-first (RTL) with English as
+secondary text, **system fonts only** (no external fonts), server-rendered HTML
++ inline CSS — no framework, no build step.
 
-## Contents
+## Sections (in order)
 
-- Building **entrance photo** (`entrance_photo_url`).
-- Embedded **"how to enter" video** (`video_url`) — YouTube/Vimeo auto-embed.
+1. **Hero** — exterior image, brand wordmark, welcome title + CTA to check-in.
+2. **Apartment selector** — D1 / D2 toggle (unit, entry code, Wi-Fi, notes).
+3. **Check-in instructions** — large wayfinding image + 4 bilingual step cards +
+   the apartment `access_guideline`.
+4. **Check-in video** — lazy embed / native `<video>` / placeholder (see
+   `VIDEO_SETUP.md`).
+5. **Apartment information** — Wi-Fi, check-in/out times, services & amenities.
+6. **Stay guidelines** — concise house rules + checkout instructions.
+7. **Around you in Laban** — nearby attractions, malls, restaurants, cafés, services.
+8. **Need help?** — WhatsApp button (placeholder until set) + maintenance call.
+
+## Where to edit content
+
+- **Shared Dimora content** (brand, Wi-Fi, services, rules, nearby places,
+  check-in steps, D1/D2 details, WhatsApp number): one file —
+  **`service/src/data/guestGuide.ts`**.
+- **Per-apartment dynamic fields** (below): the `Apartments` sheet row
+  (template `templates/apartments.csv`). Mapping: `apt_01 → D1`, `apt_02 → D2`.
+
+## Per-apartment fields (sheet row)
+
+- Building **entrance / wayfinding photo** (`entrance_photo_url`).
+- Embedded **"how to enter" video** (`video_url`) — YouTube/Vimeo auto-embed
+  (or a guide-wide `media.videoUrl`; see `VIDEO_SETUP.md`).
 - **Access instructions** (`access_guideline`).
-- **Building info / directions / Wi-Fi** (`building_info`).
+- **Building info / directions** (`building_info`).
 - **Checkout instructions** (`checkout_guideline`).
 - **Maintenance contact** (`maintenance_contact_phone`).
 
