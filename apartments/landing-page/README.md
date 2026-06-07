@@ -2,19 +2,22 @@
 
 كل شيء عن صفحة دليل ضيف **ديمورا** في مكان واحد: التصميم، الصور، المراجع، وطريقة التعديل.
 
-> هذا المجلد **مرجع وتوثيق**. الكود الفعلي اللي يولّد الصفحة موجود في خدمة
-> العملاء (`service/`) عشان يشتغل ويرتبط برسائل الواتساب — مساراته مذكورة تحت.
+> هذا المجلد **مرجع وتوثيق + أصول (صور/معاينة)**. الكود الفعلي اللي يولّد الصفحة
+> موجود في نظام الرسائل (`../messaging-system/service/`) لأن نفس الخدمة تخدم
+> الصفحة وترتبط برسائل الواتساب — المسارات مذكورة تحت.
 
 ---
 
 ## 📂 محتويات هذا المجلد
 
 ```
-dimora-landing/
+landing-page/
 ├── README.md            ← أنت هنا (الفهرس الرئيسي)
 ├── DESIGN-SYSTEM.md     ← نظام التصميم: ألوان، خطوط، حركة، مراجع عدّة (EDDAH)
-├── assets/
-│   └── README.md        ← الصور المطلوبة + أسماؤها + وين ترفعها + الفيديو
+├── CONTENT-GUIDE.md     ← كيف تعدّل D1/D2 + الواي فاي + الواتساب + الصور
+├── VIDEO_SETUP.md       ← إعداد فيديو الدخول
+├── landing-page.md      ← التوثيق التقني للصفحة
+├── images/              ← الصور الفعلية (wayfinding, bedroom, logo …) + دليلها
 └── preview/
     ├── dimora-ar.html   ← معاينة جاهزة (افتحها بالمتصفح) — عربي
     └── dimora-en.html   ← معاينة — إنجليزي
@@ -41,9 +44,9 @@ dimora-landing/
 
 | أبغى أعدّل | الملف |
 |---|---|
-| واي فاي، خدمات، قوانين، أماكن قريبة، خطوات الدخول، رقم الواتساب، تفاصيل D1/D2 | `service/src/data/guestGuide.ts` |
-| اسم الشقة، نص الدخول، صورة المدخل، الفيديو، معلومات العمارة، رقم الصيانة | جدول `Apartments` (قالب `templates/apartments.csv`) — `apt_01→D1`، `apt_02→D2` |
-| الألوان والخطوط والحركة | `service/src/services/landing.ts` (راجع `DESIGN-SYSTEM.md`) |
+| واي فاي، خدمات، قوانين، أماكن قريبة، خطوات الدخول، رقم الواتساب، تفاصيل D1/D2 | `../messaging-system/service/src/data/guestGuide.ts` |
+| اسم الشقة، نص الدخول، صورة المدخل، الفيديو، معلومات العمارة، رقم الصيانة | جدول `Apartments` (قالب `../messaging-system/templates/apartments.csv`) — `apt_01→D1`، `apt_02→D2` |
+| الألوان والخطوط والحركة | `../messaging-system/service/src/services/landing.ts` (راجع `DESIGN-SYSTEM.md`) |
 
 تفاصيل أكثر: `CONTENT-GUIDE.md`.
 
@@ -51,9 +54,9 @@ dimora-landing/
 
 ## 🖼️ الصور والفيديو
 
-كل التفاصيل في **`assets/README.md`** — باختصار:
-- ارفع الصور في ريبو عام (`akoz20100-blip.github.io/dimora/`) بالأسماء المحددة.
-- ارفع الفيديو على YouTube (Unlisted) وحط الرابط.
+الصور الفعلية في **`images/`** (راجع `images/README.md`). باختصار:
+- الصور محفوظة هنا كمصدر؛ لعرضها للضيوف نخدمها عند النشر أو نرفعها في ريبو عام.
+- الفيديو: YouTube (Unlisted) → ضع الرابط في `media.videoUrl`.
 - بعدها حط الروابط في `guestGuide.ts` (قسم `media`) و `brand.logoUrl`.
 
 ---
@@ -61,7 +64,7 @@ dimora-landing/
 ## ▶️ معاينة وتشغيل
 
 ```bash
-cd ../service
+cd ../messaging-system/service
 npm install
 npm run dev      # افتح: http://localhost:3000/api/landing/apt_01?lang=ar
 npm test         # الاختبارات
@@ -75,14 +78,14 @@ npm test         # الاختبارات
 
 - **نظام تصميم عدّة (EDDAH):** ريبو `akoz20100-blip/eddah-design-reference`
   (الألوان، خطوط Thmanyah، `RECREATE-PROMPT.md`). الملخّص في `DESIGN-SYSTEM.md`.
-- **الخطوط:** Thmanyah — مضمّنة محلياً في `service/src/assets/` (بدون أي خط خارجي).
-- **إعداد الفيديو:** `../VIDEO_SETUP.md`.
-- **توثيق الصفحة التقني:** `../landing-page.md`.
+- **الخطوط:** Thmanyah — مضمّنة محلياً في `../messaging-system/service/src/assets/` (بدون أي خط خارجي).
+- **إعداد الفيديو:** `VIDEO_SETUP.md`.
+- **توثيق الصفحة التقني:** `landing-page.md`.
 
 ---
 
 ## ✅ الحالة
 
 - التصميم: جاهز (8 أقسام، RTL، خطوط Thmanyah، توكنز عدّة بألوان ديمورا).
-- ناقص: روابط الصور الحقيقية + رابط الفيديو + رقم الواتساب.
+- ناقص: ربط روابط الصور + رابط الفيديو + رقم الواتساب (نسوّيه عند النشر).
 - مرفوع على الفرع `claude/customer-booking-automation-U4EEh` (PR #1).

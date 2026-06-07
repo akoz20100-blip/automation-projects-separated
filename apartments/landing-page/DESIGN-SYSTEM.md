@@ -8,9 +8,9 @@
 - **العناوين (H1/H2):** Thmanyah Serif Display — وزن 700.
 - **النص وكل الواجهة:** Thmanyah Sans — أوزان 400 / 700.
 - تباعد حروف العناوين: `-0.01em` (يحترم الأساس العربي).
-- **محمّلة محلياً 100%** كـ base64 داخل `service/src/assets/thmanyahFonts.ts`
+- **محمّلة محلياً 100%** كـ base64 داخل `../messaging-system/service/src/assets/thmanyahFonts.ts`
   → صفر طلبات خارجية (لا Google Fonts ولا CDN).
-- الملفات الأصلية + الترخيص: `service/src/assets/fonts/`.
+- الملفات الأصلية + الترخيص: `../messaging-system/service/src/assets/fonts/`.
 
 ## 🎨 الألوان (هوية ديمورا الترابية)
 
@@ -55,6 +55,6 @@
 
 ## 🛠️ أين الكود
 
-- المولّد الرئيسي: `service/src/services/landing.ts`.
-- بيانات المحتوى: `service/src/data/guestGuide.ts`.
-- الخطوط المضمّنة: `service/src/assets/thmanyahFonts.ts`.
+- المولّد الرئيسي: `../messaging-system/service/src/services/landing.ts`.
+- بيانات المحتوى: `../messaging-system/service/src/data/guestGuide.ts`.
+- الخطوط المضمّنة: `../messaging-system/service/src/assets/thmanyahFonts.ts`.

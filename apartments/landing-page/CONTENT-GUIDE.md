@@ -1,6 +1,6 @@
 # ✏️ دليل تعديل المحتوى
 
-## الملف الرئيسي للمحتوى: `service/src/data/guestGuide.ts`
+## الملف الرئيسي للمحتوى: `../messaging-system/service/src/data/guestGuide.ts`
 
 ### رقم الواتساب
 ```ts
@@ -44,7 +44,7 @@ apartments: {
 ---
 
 ## بيانات كل شقة: جدول `Apartments`
-قالب: `templates/apartments.csv`. الأعمدة المهمة للصفحة:
+قالب: `../messaging-system/templates/apartments.csv`. الأعمدة المهمة للصفحة:
 `access_guideline` (نص الدخول) · `entrance_photo_url` · `video_url` ·
 `building_info` · `checkout_guideline` · `maintenance_contact_phone`.
 
