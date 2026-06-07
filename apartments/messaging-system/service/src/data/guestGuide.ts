@@ -52,6 +52,17 @@ export interface GuideApartment {
   noteEn: string;
 }
 
+/**
+ * Public base URL for the landing-page images committed under
+ * `apartments/landing-page/images/`. These resolve once the repo is public and
+ * this branch is merged to `main`.
+ *
+ * To host images elsewhere (e.g. github.io), change this single constant, e.g.
+ *   "https://akoz20100-blip.github.io/dimora/images"
+ */
+const MEDIA_BASE =
+  "https://raw.githubusercontent.com/akoz20100-blip/automation-projects-separated/main/apartments/landing-page/images";
+
 export const guide = {
   brand: {
     nameAr: "ديمورا",
@@ -63,7 +74,7 @@ export const guide = {
     subtitleAr: "كل ما تحتاجه للدخول والإقامة بسهولة.",
     subtitleEn: "Everything you need for a smooth stay.",
     /** Optional logo image URL. Empty -> a clean text wordmark is shown. */
-    logoUrl: "",
+    logoUrl: `${MEDIA_BASE}/logo.png`,
   },
 
   /** WhatsApp help number in intl format e.g. "9665XXXXXXXX". Empty -> placeholder, no fake number. */
@@ -85,15 +96,28 @@ export const guide = {
    */
   media: {
     /** Exterior building image for the hero. Falls back to the apartment entrance photo. */
-    heroImageUrl: "",
+    heroImageUrl: `${MEDIA_BASE}/living-room.jpg`,
     /** The ANNOTATED exterior image (entrance/parking/first-floor labels) for check-in. */
-    wayfindingImageUrl: "",
-    /** Check-in video. YouTube/Vimeo link -> embed; a direct .mp4 -> <video>. Falls back to the sheet video_url. */
+    wayfindingImageUrl: `${MEDIA_BASE}/wayfinding.png`,
+    /**
+     * Check-in video. YouTube/Vimeo link -> embed; a direct .mp4 -> <video>.
+     * Falls back to the sheet video_url.
+     * TODO(owner): paste the Unlisted YouTube link here once uploaded,
+     *   e.g. "https://youtu.be/XXXXXXXXXXX". Empty -> elegant placeholder.
+     */
     videoUrl: "",
     /** Poster shown before the video loads (recommended for performance). */
-    videoPoster: "",
-    /** A few interior photos for a small gallery. */
-    gallery: [] as string[],
+    videoPoster: `${MEDIA_BASE}/living-room-2.jpg`,
+    /**
+     * A few interior photos for a small gallery.
+     * NOTE: not rendered by landing.ts yet — populated here as the data source
+     * for when a gallery section is added.
+     */
+    gallery: [
+      `${MEDIA_BASE}/bedroom.jpg`,
+      `${MEDIA_BASE}/living-room-2.jpg`,
+      `${MEDIA_BASE}/coffee-corner.jpg`,
+    ] as string[],
   },
 
   /** Section 3 — the four key check-in instruction cards. */

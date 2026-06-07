@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderLandingPage, toEmbedUrl, escapeHtml } from "../src/services/landing.js";
+import { guide } from "../src/data/guestGuide.js";
 import type { Apartment } from "../src/types.js";
 
 const apartment: Apartment = {
@@ -44,7 +45,9 @@ describe("renderLandingPage", () => {
     const html = renderLandingPage(apartment, "ar");
     expect(html).toContain('dir="rtl"');
     expect(html).toContain("Riyadh Apartment 1");
-    expect(html).toContain("https://example.com/entrance.jpg");
+    // Shared guide media is primary for the exterior/wayfinding imagery.
+    expect(html).toContain(guide.media.wayfindingImageUrl);
+    // Video falls back to the per-apartment video_url when the guide has none.
     expect(html).toContain("https://www.youtube.com/embed/abc123XYZ");
     expect(html).toContain("رمز الباب 1234");
     expect(html).toContain("tel:966500000000");
