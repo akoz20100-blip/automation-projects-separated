@@ -1,5 +1,11 @@
 # Project 03: Accounting, Invoices, And Margin
 
+**Roll monthly reservations, costs, and expenses into sales, profit, and margin per apartment.**
+
+> **At a glance** — **Status:** Phase 1, Google Sheets · **Stack:** Make.com → Cloud API → `MonthlySales` · **Next:** Zoho Books
+
+↩ Back to [all projects](../README.md)
+
 ## Goal
 
 Calculate monthly sales, costs, invoices, and profit margin.
@@ -26,14 +32,12 @@ Add Zoho Books after the monthly calculations are stable.
 
 ## Files
 
-```text
-README.md
-project-plan.md
-make-scenarios.md
-cloud-api.md
-commands.md
-prompts/cloud-code-prompt.md
-templates/monthly_sales.csv
-templates/expenses.csv
-```
+- [`README.md`](README.md) — this overview
+- [`project-plan.md`](project-plan.md) — phased build plan
+- [`make-scenarios.md`](make-scenarios.md) — Make.com scenario setup
+- [`cloud-api.md`](cloud-api.md) — Cloud API contract
+- [`commands.md`](commands.md) — Cloud Code commands
+- [`prompts/cloud-code-prompt.md`](prompts/cloud-code-prompt.md) — Cloud Code handoff prompt
+- [`templates/monthly_sales.csv`](templates/monthly_sales.csv) — monthly sales output sheet
+- [`templates/expenses.csv`](templates/expenses.csv) — expenses input sheet
 

@@ -1,5 +1,9 @@
 # Automation Projects Separated
 
+**Three independent automation projects — guest messaging, maintenance care, and accounting — sharing one Make.com → Cloud API backbone.**
+
+> **At a glance** — **Status:** Phase 1 across all projects · **Orchestration:** Make.com · **Business logic:** Cloud Code / Cloud API · **Messaging:** manual `wa.me` links first
+
 This folder separates the automation work into three independent projects.
 
 Each project can be copied into GitHub or handed to Cloud Code/Codex separately.
@@ -16,9 +20,9 @@ automation-projects-separated/
 
 ## Recommended Build Order
 
-1. `01-apartment-guest-messaging`
-2. `02-maintenance-customer-care`
-3. `03-accounting-invoices-and-margin`
+1. [`01-apartment-guest-messaging`](01-apartment-guest-messaging/README.md)
+2. [`02-maintenance-customer-care`](02-maintenance-customer-care/README.md)
+3. [`03-accounting-invoices-and-margin`](03-accounting-invoices-and-margin/README.md)
 
 ## Shared Architecture
 
