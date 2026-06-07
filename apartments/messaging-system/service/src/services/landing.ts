@@ -230,7 +230,9 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   let videoBody: string;
   const isVertical = /youtube\.com\/shorts\//i.test(videoUrl);
   if (embed) {
-    videoBody = `<div class="video${isVertical ? " vertical" : ""}"><iframe src="${embed}" title="${escapeHtml(t.videoTitle)}" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    // Inline-play params: no related videos, plays inside the page on mobile.
+    const embedSrc = `${embed}${embed.includes("?") ? "&" : "?"}rel=0&playsinline=1&modestbranding=1`;
+    videoBody = `<div class="video${isVertical ? " vertical" : ""}"><iframe src="${embedSrc}" title="${escapeHtml(t.videoTitle)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>`;
   } else if (videoUrl && /\.mp4(\?|$)/i.test(videoUrl)) {
     videoBody = `<video class="video-el" controls preload="metadata" playsinline ${guide.media.videoPoster ? `poster="${escapeHtml(guide.media.videoPoster)}"` : ""}><source src="${escapeHtml(videoUrl)}" type="video/mp4"></video>`;
   } else if (videoUrl) {
