@@ -7,6 +7,8 @@
 
 const MIN_DIGITS = 8;
 const MAX_DIGITS = 15;
+/** Default country calling code for local numbers (Saudi Arabia). */
+const DEFAULT_CC = "966";
 
 /**
  * Normalize a raw phone string to digits-only international format.
@@ -27,6 +29,12 @@ export function normalizePhone(raw: string | null | undefined): string | null {
   // Convert a leading 00 international prefix to nothing (we keep digits only).
   digits = digits.replace(/^\+/, "").replace(/^00/, "");
   digits = digits.replace(/\D/g, "");
+
+  // Convert local Saudi mobile formats to international (e.g. 0502305331 ->
+  // 966502305331, 502305331 -> 966502305331). Numbers already in international
+  // form (starting with the country code) are left untouched.
+  if (/^05\d{8}$/.test(digits)) digits = DEFAULT_CC + digits.slice(1);
+  else if (/^5\d{8}$/.test(digits)) digits = DEFAULT_CC + digits;
 
   if (digits.length < MIN_DIGITS || digits.length > MAX_DIGITS) return null;
   return digits;

@@ -18,6 +18,12 @@ describe("normalizePhone", () => {
     expect(normalizePhone("٩٦٦٥١٢٣٤٥٦٧٨")).toBe("966512345678");
   });
 
+  it("converts local Saudi mobile to international", () => {
+    expect(normalizePhone("0502305331")).toBe("966502305331");
+    expect(normalizePhone("502305331")).toBe("966502305331");
+    expect(normalizePhone("٠٥٠٢٣٠٥٣٣١")).toBe("966502305331");
+  });
+
   it("rejects too-short and empty values", () => {
     expect(normalizePhone("123")).toBeNull();
     expect(normalizePhone("")).toBeNull();
