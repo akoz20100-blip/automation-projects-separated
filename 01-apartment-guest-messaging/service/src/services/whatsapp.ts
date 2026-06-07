@@ -88,6 +88,26 @@ export function buildTemplatePayload(
 }
 
 /**
+ * Send arbitrary free-form text to any recipient (owner / cleaner) via the
+ * active channel. Used for internal notifications, which are never Meta
+ * templates. In cloud_api mode (template-only), this falls back to a wa.me link.
+ */
+export async function sendText(toPhoneRaw: string, text: string): Promise<SendResult> {
+  const toPhone = requireValidPhone(toPhoneRaw);
+  if (env.whatsappMode === "wasender") {
+    return sendViaWasender(toPhone, text);
+  }
+  // manual_link, or cloud_api (no free-form templates) -> provide a link.
+  return {
+    channel: "whatsapp_link",
+    message_id: "",
+    whatsapp_link: buildWaLink(toPhone, text),
+    text,
+    status: "ready",
+  };
+}
+
+/**
  * Send (or prepare) a message for a reservation. Network errors propagate to
  * the caller; the caller decides whether to log a failure row.
  */

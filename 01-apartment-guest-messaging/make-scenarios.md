@@ -59,7 +59,8 @@ Steps:
    - `wa_access_message_id`
    - `access_message_status = accepted` (or `ready` in manual_link mode)
 4. The Cloud API writes the `MessageLog` row itself.
-5. (Optional) Notify owner/admin.
+5. Owner notification: HTTP POST `/api/messages/notify`
+   `{ "reservation_id": ..., "notify_type": "owner_new" }`.
 
 ## Scenario 2: Checkout Reminder
 
@@ -86,7 +87,10 @@ Steps:
 
 1. HTTP GET Cloud API `/api/messages/due?type=checkout`.
 2. Iterate the returned reservations.
-3. For each, HTTP POST `/api/messages/send` with `message_type = checkout`.
+3. For each:
+   - POST `/api/messages/send` `{ message_type: "checkout" }` (guest reminder).
+   - POST `/api/messages/notify` `{ notify_type: "owner_checkout" }` (owner).
+   - POST `/api/messages/notify` `{ notify_type: "cleaner_checkout" }` (cleaner).
 4. Update `wa_checkout_message_id` and `checkout_message_status`.
 
 ## Scenario 3: Review Reminder
@@ -116,6 +120,28 @@ Steps:
 2. Iterate the returned reservations.
 3. For each, HTTP POST `/api/messages/send` with `message_type = review`.
 4. Update `wa_review_message_id` and `review_message_status`.
+
+## Scenario 5: Checkout Check (owner)
+
+Name:
+
+```text
+APT - Checkout Check
+```
+
+Trigger:
+
+```text
+Make Scheduler
+Run: every day at 13:00 Asia/Riyadh   (≈ 1 hour after the 12:00 checkout)
+```
+
+Steps:
+
+1. HTTP GET `/api/messages/due?type=checkout_today` (today's checkouts).
+2. Iterate the returned reservations.
+3. For each, POST `/api/messages/notify` `{ notify_type: "owner_check" }`
+   → owner gets "did the guest leave or extend?".
 
 ## Scenario 4: Delivery Status / Failure Alert
 

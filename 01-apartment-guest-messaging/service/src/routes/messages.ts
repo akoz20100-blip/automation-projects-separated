@@ -5,13 +5,27 @@
  */
 
 import { Router, type Request, type Response } from "express";
+import { z } from "zod";
 import { sendMessageSchema } from "../domain/reservation.js";
 import { getApartment, getReservation, listDueReservations, appendMessageLog } from "../services/sheets.js";
 import { checkAlreadySent } from "../services/idempotency.js";
-import { sendMessage } from "../services/whatsapp.js";
-import { isCheckoutAfterCheckin, dueCheckoutDate } from "../domain/dates.js";
+import { sendMessage, sendText } from "../services/whatsapp.js";
+import { renderNotify } from "../services/templates.js";
+import { isCheckoutAfterCheckin, dueCheckoutDate, todayInTz } from "../domain/dates.js";
 import { env } from "../config/env.js";
-import type { Channel, MessageType, PreparedMessage } from "../types.js";
+import type { Channel, MessageType, NotifyType, PreparedMessage } from "../types.js";
+
+const notifySchema = z.object({
+  reservation_id: z.string().min(1),
+  notify_type: z.enum(["owner_new", "owner_checkout", "owner_check", "cleaner_checkout"]),
+  force: z.boolean().default(false),
+});
+
+/** Recipient phone for a notification type (owner vs cleaner). */
+function notifyRecipient(type: NotifyType): { phone: string; who: string } {
+  if (type === "cleaner_checkout") return { phone: env.cleaner.phone, who: "cleaner" };
+  return { phone: env.owner.phone, who: "owner" };
+}
 
 export const messagesRouter = Router();
 
@@ -96,18 +110,71 @@ messagesRouter.post("/send", async (req: Request, res: Response) => {
   res.json(out);
 });
 
-messagesRouter.get("/due", async (req: Request, res: Response) => {
-  const type = String(req.query.type ?? "");
-  if (type !== "checkout" && type !== "review") {
-    res.status(400).json({ error: "type must be 'checkout' or 'review'" });
+messagesRouter.post("/notify", async (req: Request, res: Response) => {
+  const body = notifySchema.parse(req.body);
+  const { phone, who } = notifyRecipient(body.notify_type);
+  if (!phone) {
+    res.status(400).json({ error: `no ${who} phone configured (set OWNER_PHONE / CLEANER_PHONE)` });
     return;
   }
-  const date = typeof req.query.date === "string" && req.query.date
-    ? req.query.date
-    : dueCheckoutDate(type, env.timezone);
+
+  const reservation = await getReservation(body.reservation_id);
+  if (!reservation) throw new Error(`reservation not found: ${body.reservation_id}`);
+  const apartment = await getApartment(reservation.apartment_id);
+  if (!apartment) throw new Error(`apartment not found: ${reservation.apartment_id}`);
+
+  if (!body.force) {
+    const dup = await checkAlreadySent(body.reservation_id, body.notify_type);
+    if (dup.alreadySent) {
+      res.json({ notify_type: body.notify_type, status: "already_sent", recipient: who });
+      return;
+    }
+  }
+
+  const text = renderNotify(body.notify_type, reservation, apartment);
+  const result = await sendText(phone, text);
+
+  await appendMessageLog({
+    timestamp: new Date().toISOString(),
+    reservation_id: body.reservation_id,
+    message_type: body.notify_type,
+    channel: result.channel,
+    recipient_phone: phone,
+    template_name: "",
+    language: "ar",
+    wa_message_id: result.message_id,
+    status: result.status,
+    error_code: "",
+    rendered_text: result.text,
+    sent_at: result.status === "accepted" ? new Date().toISOString() : "",
+  });
+
+  res.json({
+    notify_type: body.notify_type,
+    status: result.status,
+    recipient: who,
+    recipient_phone: phone,
+    channel: result.channel,
+    text: result.text,
+    whatsapp_link: result.whatsapp_link,
+  });
+});
+
+messagesRouter.get("/due", async (req: Request, res: Response) => {
+  const type = String(req.query.type ?? "");
+  // checkout = tomorrow's checkouts; review = yesterday's; checkout_today = today's
+  if (type !== "checkout" && type !== "review" && type !== "checkout_today") {
+    res.status(400).json({ error: "type must be 'checkout', 'review' or 'checkout_today'" });
+    return;
+  }
+  const date =
+    typeof req.query.date === "string" && req.query.date
+      ? req.query.date
+      : type === "checkout_today"
+        ? todayInTz(env.timezone)
+        : dueCheckoutDate(type, env.timezone);
 
   const due = await listDueReservations(date);
-  const messageStatusKey = type === "checkout" ? "checkout" : "review";
   res.json({
     message_type: type,
     target_check_out_date: date,
@@ -118,7 +185,6 @@ messagesRouter.get("/due", async (req: Request, res: Response) => {
       guest_name: r.guest_name,
       guest_phone: r.guest_phone,
       check_out_date: r.check_out_date,
-      message_type: messageStatusKey,
     })),
   });
 });

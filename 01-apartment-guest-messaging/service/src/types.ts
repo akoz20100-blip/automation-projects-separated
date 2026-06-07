@@ -1,6 +1,9 @@
 /** Shared domain types used across services and routes. */
 
 export type MessageType = "access" | "checkout" | "review";
+
+/** Internal notifications to the owner / cleaner (not the guest). */
+export type NotifyType = "owner_new" | "owner_checkout" | "owner_check" | "cleaner_checkout";
 export type Language = "ar" | "en";
 export type Channel = "whatsapp_cloud_api" | "whatsapp_link" | "whatsapp_wasender";
 
@@ -77,7 +80,7 @@ export interface PreparedMessage {
 export interface MessageLogRow {
   timestamp: string;
   reservation_id: string;
-  message_type: MessageType;
+  message_type: MessageType | NotifyType;
   channel: Channel;
   recipient_phone: string;
   template_name: string;

@@ -121,6 +121,31 @@ Output:
 
 (`status` is `already_sent` when a non-failed log row already exists.)
 
+### POST /api/messages/notify
+
+Purpose:
+
+- Send an internal notification to the owner or cleaner (not the guest).
+  Free-form Arabic text (WasenderAPI / wa.me), idempotent per
+  `(reservation_id, notify_type)`.
+
+Notify types:
+
+```text
+owner_new          # new booking added
+owner_checkout     # night before checkout (follow up cleaning)
+owner_check        # ~1h after checkout: did the guest leave or extend?
+cleaner_checkout   # night before: apartment to clean after checkout
+```
+
+Input:
+
+```json
+{ "reservation_id": "AIRBNB-2026-0001", "notify_type": "owner_new", "force": false }
+```
+
+Recipient is resolved from `OWNER_PHONE` / `CLEANER_PHONE`.
+
 ### GET /api/messages/due?type=checkout|review
 
 Purpose:

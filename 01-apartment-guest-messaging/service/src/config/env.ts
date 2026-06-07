@@ -68,6 +68,11 @@ export interface Env {
     notifyEnabled: boolean;
     phone: string;
   };
+
+  cleaner: {
+    notifyEnabled: boolean;
+    phone: string;
+  };
 }
 
 export function loadEnv(): Env {
@@ -125,6 +130,11 @@ export function loadEnv(): Env {
     owner: {
       notifyEnabled: bool("OWNER_NOTIFY_ENABLED", false),
       phone: str("OWNER_PHONE"),
+    },
+
+    cleaner: {
+      notifyEnabled: bool("CLEANER_NOTIFY_ENABLED", false),
+      phone: str("CLEANER_PHONE"),
     },
   };
 }

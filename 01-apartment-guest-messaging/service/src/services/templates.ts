@@ -8,8 +8,24 @@
  * placeholders to those positions, kept in sync with whatsapp-templates.md.
  */
 
-import type { Apartment, Language, MessageType, Reservation } from "../types.js";
+import type { Apartment, Language, MessageType, NotifyType, Reservation } from "../types.js";
 import { env } from "../config/env.js";
+
+/**
+ * Internal notification templates (owner / cleaner), Arabic — these recipients
+ * are the host's own team. Sent as free-form text (WasenderAPI / wa.me), so no
+ * Meta template approval is required.
+ */
+export const NOTIFY_TEMPLATES: Record<NotifyType, string> = {
+  owner_new:
+    "📥 حجز جديد\nالعميل: {{guest_name}}\nالشقة: {{apartment_name}}\nالدخول: {{check_in_date}} {{check_in_time}}\nالخروج: {{check_out_date}} {{check_out_time}}\nجوال العميل: {{guest_phone}}",
+  owner_checkout:
+    "🔔 تذكير خروج بكرة\nالعميل {{guest_name}} يطلع من {{apartment_name}} بتاريخ {{check_out_date}} الساعة {{check_out_time}}.\nتابع جدول النظافة 🧹",
+  owner_check:
+    "❓ متابعة خروج\nهل طلع {{guest_name}} من {{apartment_name}}؟\n(موعد الخروج كان اليوم الساعة {{check_out_time}})\nرد: طلع ✅ / مدّد ⏰",
+  cleaner_checkout:
+    "🧹 تنظيف بكرة\nشقة {{apartment_name}} بتكون فاضية بعد خروج الضيف بتاريخ {{check_out_date}} الساعة {{check_out_time}}.\nنحتاج تجهيزها للضيف الجاي. شكراً 🤍",
+};
 
 type TemplateKey = `${MessageType}_${Language}`;
 
@@ -56,6 +72,7 @@ export function templateVars(
     airbnb_review_url:
       reservation.airbnb_review_url || apartment.airbnb_review_url || "https://airbnb.com/",
     landing_url: landingUrl(reservation.apartment_id, lang),
+    guest_phone: reservation.guest_phone,
   };
 }
 
@@ -68,6 +85,15 @@ export function renderText(
   const lang = reservation.guest_language;
   const key = `${type}_${lang}` as TemplateKey;
   return fill(MESSAGE_TEMPLATES[key], templateVars(reservation, apartment));
+}
+
+/** Render an internal owner/cleaner notification (Arabic free-form text). */
+export function renderNotify(
+  type: NotifyType,
+  reservation: Reservation,
+  apartment: Apartment,
+): string {
+  return fill(NOTIFY_TEMPLATES[type], templateVars(reservation, apartment));
 }
 
 /** Resolve the approved WhatsApp template name for a type + language. */

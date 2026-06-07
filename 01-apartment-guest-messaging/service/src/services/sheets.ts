@@ -127,7 +127,7 @@ export async function listDueReservations(targetCheckoutDate: string): Promise<R
 /** Find an existing log entry for idempotency on (reservation_id, message_type). */
 export async function findMessageLog(
   reservationId: string,
-  messageType: MessageType,
+  messageType: string,
 ): Promise<MessageLogRow | null> {
   const { header, rows } = await readTab(MESSAGE_LOG);
   for (const row of rows) {

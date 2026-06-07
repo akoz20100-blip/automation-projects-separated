@@ -5,7 +5,7 @@
  * triggers from messaging a guest twice.
  */
 
-import type { MessageType } from "../types.js";
+import type { MessageType, NotifyType } from "../types.js";
 import { findMessageLog } from "./sheets.js";
 
 const NON_RESEND_STATUSES = new Set(["accepted", "sent", "delivered", "read", "ready"]);
@@ -18,7 +18,7 @@ export interface AlreadySent {
 
 export async function checkAlreadySent(
   reservationId: string,
-  messageType: MessageType,
+  messageType: MessageType | NotifyType,
 ): Promise<AlreadySent> {
   const existing = await findMessageLog(reservationId, messageType);
   if (existing && NON_RESEND_STATUSES.has(String(existing.status))) {
