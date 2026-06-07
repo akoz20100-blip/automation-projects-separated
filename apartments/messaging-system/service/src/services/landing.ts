@@ -1,9 +1,15 @@
 /**
- * Dimora guest-guide landing page — premium boutique-hospitality experience.
+ * Dimora guest-guide landing page — light, editorial, reference-driven.
+ *
+ * Design language follows the owner's design references (see
+ * `apartments/landing-page/DESIGN-SYSTEM.md`): an Apple-style LIGHT canvas with
+ * generous whitespace, an elegant serif display + clean sans, a single CORAL
+ * accent, colourful glassy gradient tiles, browser-style mock framing, a pill
+ * segmented toggle, and a big-number highlights strip.
+ *
  * Mobile-first, RTL Arabic-first, server-rendered HTML + inline CSS (no
- * framework, no build step, NO external fonts). Linked from guest WhatsApp
- * messages. Aesthetic: refined, warm, editorial — system serif display +
- * earth-toned palette, subtle grain, staggered reveals.
+ * framework, no build step, NO external fonts/assets). Linked from guest
+ * WhatsApp messages.
  *
  * Per-apartment fields come from the `Apartments` sheet row; all shared Dimora
  * content (brand, services, rules, nearby places, check-in steps, D1/D2 details)
@@ -48,6 +54,7 @@ const COPY = {
     dir: "rtl",
     cta: "شاهد فيديو الدخول",
     selector: "اختر شقتك",
+    yourUnit: "وحدتك",
     checkinTitle: "تعليمات الدخول",
     howToEnter: "طريقة الدخول للشقة",
     videoTitle: "فيديو طريقة الدخول",
@@ -59,6 +66,7 @@ const COPY = {
     wifiPass: "كلمة السر",
     checkIn: "وقت الدخول",
     checkOut: "وقت الخروج",
+    support: "دعم على مدار الساعة",
     services: "الخدمات والمزايا",
     rulesTitle: "إرشادات الإقامة",
     nearbyTitle: "حولك في حي لبن",
@@ -74,11 +82,13 @@ const COPY = {
     checkoutInfo: "إرشادات الخروج",
     imgSoon: "سيتم إضافة الصورة هنا",
     eyebrow: "إقامة بوتيكية في الرياض",
+    mockTitle: "ديمورا · دليل الضيف",
   },
   en: {
     dir: "ltr",
     cta: "Watch the check-in video",
     selector: "Choose your apartment",
+    yourUnit: "Your unit",
     checkinTitle: "Check-in Instructions",
     howToEnter: "How to enter",
     videoTitle: "Check-in Video",
@@ -88,8 +98,9 @@ const COPY = {
     wifi: "Wi-Fi",
     wifiName: "Network",
     wifiPass: "Password",
-    checkIn: "Check-in time",
-    checkOut: "Check-out time",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    support: "Around-the-clock support",
     services: "Services & Amenities",
     rulesTitle: "Stay Guidelines",
     nearbyTitle: "Around You in Laban",
@@ -105,6 +116,7 @@ const COPY = {
     checkoutInfo: "Checkout instructions",
     imgSoon: "Image will be added here",
     eyebrow: "A boutique stay in Riyadh",
+    mockTitle: "Dimora · Guest Guide",
   },
 } as const;
 
@@ -131,10 +143,20 @@ const ICONS: Record<string, string> = {
   whatsapp: '<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Z"/><path d="M8.5 8.5c0 4 3 6.5 6.5 6.5.7 0 1-.4 1-1l-.3-1.4-1.7-.6-.9 1c-1.2-.5-2.1-1.4-2.6-2.6l1-.9-.6-1.7L9.5 7.5c-.6 0-1 .3-1 1Z"/>',
   pin: '<path d="M12 21s7-5.5 7-11a7 7 0 0 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
+  shield: '<path d="M12 3 5 6v6c0 4 3 6.5 7 9 4-2.5 7-5 7-9V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/>',
 };
 
 const icon = (name: string, cls = "ic") =>
-  `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] ?? ""}</svg>`;
+  `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] ?? ""}</svg>`;
+
+/** Section header: coral icon chip + serif Arabic title with muted English. */
+function secHead(iconName: string, ar: string, en: string, extra = ""): string {
+  return `<div class="sec-head">
+    <span class="chip">${icon(iconName, "chip-ic")}</span>
+    <div class="sec-text"><h2 class="sec-title">${escapeHtml(ar)}${extra}</h2><span class="sec-sub" dir="auto">${escapeHtml(en)}</span></div>
+  </div>`;
+}
 
 /** A media block: image if a URL exists, else an elegant placeholder. */
 function media(url: string, alt: string, placeholder: string, cls: string): string {
@@ -142,6 +164,14 @@ function media(url: string, alt: string, placeholder: string, cls: string): stri
     return `<img class="${cls}" src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async">`;
   }
   return `<div class="${cls} ph" role="img" aria-label="${escapeHtml(alt)}">${icon("pin", "ph-ic")}<span>${escapeHtml(placeholder)}</span></div>`;
+}
+
+/** Wrap an inner media node in a browser-style mock window on a gradient pad. */
+function mockFrame(inner: string, title: string): string {
+  return `<div class="pad art-hero"><figure class="mock">
+    <div class="mock-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="mock-title">${escapeHtml(title)}</span></div>
+    ${inner}
+  </figure></div>`;
 }
 
 /** A built-in apartment (from guestGuide) so the page renders even before the
@@ -177,59 +207,43 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const checkInTime = apartment.default_check_in_time || guide.checkInTime;
   const checkOutTime = apartment.default_check_out_time || guide.checkOutTime;
 
-  // ---- Section 1: Hero ----
+  // ---- Section 1: Hero (light, editorial) ----
   const logo = guide.brand.logoUrl
     ? `<img class="logo" src="${escapeHtml(guide.brand.logoUrl)}" alt="${escapeHtml(brandName)}">`
     : `<span class="wordmark">${escapeHtml(guide.brand.nameEn)}</span>`;
+  const heroShowcase = heroImg
+    ? mockFrame(
+        `<img class="show-img" src="${escapeHtml(heroImg)}" alt="${escapeHtml(brandName)}" loading="eager" decoding="async">`,
+        t.mockTitle,
+      )
+    : "";
   const hero = `
-  <header class="hero" ${heroImg ? `style="background-image:linear-gradient(180deg,rgba(22,28,22,.66) 0%,rgba(24,30,24,.46) 40%,rgba(22,28,22,.84) 100%),url('${escapeHtml(heroImg)}')"` : ""}>
-    <div class="hero-top up" style="--d:.05s">${logo}<span class="kicker">${escapeHtml(pick(lang, guide.brand.headerAr, guide.brand.headerEn))}</span></div>
-    <div class="hero-mid">
-      <span class="eyebrow up" style="--d:.15s">${escapeHtml(t.eyebrow)}</span>
-      <h1 class="up" style="--d:.25s">${escapeHtml(pick(lang, guide.brand.welcomeAr, guide.brand.welcomeEn))}</h1>
-      <p class="up" style="--d:.38s">${escapeHtml(pick(lang, guide.brand.subtitleAr, guide.brand.subtitleEn))}</p>
-      <a class="btn up" style="--d:.5s" href="#video">${escapeHtml(t.cta)} ${icon("chevron", "btn-ic")}</a>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brandbar up" style="--d:.04s">${logo}</div>
+      <span class="eyebrow up" style="--d:.14s">${escapeHtml(t.eyebrow)}</span>
+      <h1 class="up" style="--d:.22s">${escapeHtml(pick(lang, guide.brand.welcomeAr, guide.brand.welcomeEn))}</h1>
+      <p class="lede up" style="--d:.32s">${escapeHtml(pick(lang, guide.brand.subtitleAr, guide.brand.subtitleEn))}</p>
+      <a class="btn up" style="--d:.42s" href="#video">${escapeHtml(t.cta)} ${icon("chevron", "btn-ic")}</a>
+      ${heroShowcase ? `<div class="showcase up" style="--d:.52s">${heroShowcase}</div>` : ""}
     </div>
   </header>`;
 
-  // ---- Section 2: Apartment selector ----
-  const selBtn = (c: ApartmentCode) =>
-    `<button type="button" class="seg${c === code ? " on" : ""}" data-code="${c}">${escapeHtml(guide.apartments[c].nameEn)}</button>`;
-  const selector = `
-  <section class="wrap reveal" aria-label="${escapeHtml(t.selector)}">
-    <div class="seg-wrap">${selBtn("D1")}${selBtn("D2")}</div>
-    <div class="card unit-card">
-      <h2 class="unit-name" id="u-name">${escapeHtml(pick(lang, unit.nameAr, unit.nameEn))}</h2>
-      <div class="kv"><span>${escapeHtml(t.unit)}</span><b id="u-unit">${escapeHtml(pick(lang, unit.unitAr, unit.unitEn))}</b></div>
-      <div class="kv"><span>${escapeHtml(t.entry)}</span><b id="u-entry">${unit.entryCode ? escapeHtml(unit.entryCode) : `<i class="soft">${escapeHtml(t.entrySoon)}</i>`}</b></div>
-      <p class="note" id="u-note">${escapeHtml(pick(lang, unit.noteAr, unit.noteEn))}</p>
+  // ---- Highlights strip (true facts, big-number style) ----
+  const highlights = `
+  <section class="wrap reveal">
+    <div class="stats">
+      <div class="stat"><b>${escapeHtml(checkInTime)}</b><span>${escapeHtml(t.checkIn)}</span></div>
+      <div class="stat"><b>${escapeHtml(checkOutTime)}</b><span>${escapeHtml(t.checkOut)}</span></div>
+      <div class="stat"><b>24/7</b><span>${escapeHtml(t.support)}</span></div>
     </div>
   </section>`;
 
-  // ---- Section 3: Check-in instructions ----
-  const stepCards = guide.steps
-    .map(
-      (s, i) =>
-        `<div class="step"><span class="num">${i + 1}</span>${icon(s.icon)}${bi(s.ar, s.en)}</div>`,
-    )
-    .join("");
-  const accessBody = apartment.access_guideline
-    ? `<div class="card access"><h3>${escapeHtml(t.howToEnter)}</h3><p>${escapeHtml(apartment.access_guideline).replace(/\n/g, "<br>")}</p></div>`
-    : "";
-  const checkin = `
-  <section id="checkin" class="wrap reveal">
-    <h2 class="sec-title">${icon("door", "sec-ic")} ${bi(COPY.ar.checkinTitle, COPY.en.checkinTitle)}</h2>
-    <figure class="way">${media(wayImg, pick(lang, "صورة توضيح المدخل والمواقف", "Entrance & parking guide"), t.imgSoon, "way-img")}</figure>
-    <div class="steps">${stepCards}</div>
-    ${accessBody}
-  </section>`;
-
-  // ---- Section 4: Check-in video ----
+  // ---- Section 2: Check-in video ----
   const embed = videoUrl ? toEmbedUrl(videoUrl) : null;
   let videoBody: string;
   const isVertical = /youtube\.com\/shorts\//i.test(videoUrl);
   if (embed) {
-    // Inline-play params: no related videos, plays inside the page on mobile.
     const embedSrc = `${embed}${embed.includes("?") ? "&" : "?"}rel=0&playsinline=1&modestbranding=1`;
     videoBody = `<div class="video${isVertical ? " vertical" : ""}"><iframe src="${embedSrc}" title="${escapeHtml(t.videoTitle)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>`;
   } else if (videoUrl && /\.mp4(\?|$)/i.test(videoUrl)) {
@@ -241,23 +255,56 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   }
   const video = `
   <section id="video" class="wrap reveal">
-    <h2 class="sec-title">${icon("play", "sec-ic")} ${bi(COPY.ar.videoTitle, COPY.en.videoTitle)}</h2>
+    ${secHead("play", COPY.ar.videoTitle, COPY.en.videoTitle)}
     <p class="sec-desc">${escapeHtml(pick(lang, COPY.ar.videoDesc, COPY.en.videoDesc))}</p>
     ${videoBody}
   </section>`;
 
+  // ---- Section 3: Check-in instructions (mock-framed image + feature grid) ----
+  const stepCards = guide.steps
+    .map(
+      (s, i) =>
+        `<div class="step"><span class="num">${i + 1}</span><span class="tile-ic">${icon(s.icon)}</span>${bi(s.ar, s.en)}</div>`,
+    )
+    .join("");
+  const accessBody = apartment.access_guideline
+    ? `<div class="card access"><h3>${escapeHtml(t.howToEnter)}</h3><p>${escapeHtml(apartment.access_guideline).replace(/\n/g, "<br>")}</p></div>`
+    : "";
+  const checkin = `
+  <section id="checkin" class="wrap reveal">
+    ${secHead("door", COPY.ar.checkinTitle, COPY.en.checkinTitle)}
+    <div class="way">${mockFrame(media(wayImg, pick(lang, "صورة توضيح المدخل والمواقف", "Entrance & parking guide"), t.imgSoon, "show-img"), t.mockTitle)}</div>
+    <div class="steps">${stepCards}</div>
+    ${accessBody}
+  </section>`;
+
+  // ---- Section 4: Apartment selector (pill toggle, like the reference) ----
+  const selBtn = (c: ApartmentCode) =>
+    `<button type="button" class="seg${c === code ? " on" : ""}" data-code="${c}">${escapeHtml(guide.apartments[c].nameEn)}</button>`;
+  const selector = `
+  <section class="wrap reveal" aria-label="${escapeHtml(t.selector)}">
+    <div class="seg-row"><div class="seg-wrap">${selBtn("D1")}${selBtn("D2")}</div></div>
+    <div class="card unit-card">
+      <span class="kicker">${escapeHtml(t.yourUnit)}</span>
+      <h2 class="unit-name" id="u-name">${escapeHtml(pick(lang, unit.nameAr, unit.nameEn))}</h2>
+      <div class="kv"><span>${escapeHtml(t.unit)}</span><b id="u-unit">${escapeHtml(pick(lang, unit.unitAr, unit.unitEn))}</b></div>
+      <div class="kv"><span>${escapeHtml(t.entry)}</span><b id="u-entry" class="code">${unit.entryCode ? escapeHtml(unit.entryCode) : `<i class="soft">${escapeHtml(t.entrySoon)}</i>`}</b></div>
+      <p class="note" id="u-note">${escapeHtml(pick(lang, unit.noteAr, unit.noteEn))}</p>
+    </div>
+  </section>`;
+
   // ---- Section 5: Apartment information ----
   const serviceCards = guide.services
-    .map((s) => `<div class="svc">${icon(s.icon, "svc-ic")}${bi(s.ar, s.en)}</div>`)
+    .map((s) => `<div class="svc"><span class="tile-ic">${icon(s.icon)}</span>${bi(s.ar, s.en)}</div>`)
     .join("");
   const info = `
   <section class="wrap reveal">
-    <h2 class="sec-title">${icon("building", "sec-ic")} ${bi(COPY.ar.infoTitle, COPY.en.infoTitle)} <span class="apt-name">· ${escapeHtml(apartment.apartment_name)}</span></h2>
+    ${secHead("building", COPY.ar.infoTitle, COPY.en.infoTitle, ` <span class="apt-name">· ${escapeHtml(apartment.apartment_name)}</span>`)}
     <div class="grid2">
       <div class="card wifi">
-        <div class="card-h">${icon("wifi", "card-ic")}<span>${escapeHtml(t.wifi)}</span></div>
+        <div class="card-h"><span class="chip sm">${icon("wifi", "chip-ic")}</span><span>${escapeHtml(t.wifi)}</span></div>
         <div class="kv"><span>${escapeHtml(t.wifiName)}</span><b id="u-wifi-name">${escapeHtml(unit.wifiName || guide.wifi.name)}</b></div>
-        <div class="kv"><span>${escapeHtml(t.wifiPass)}</span><b id="u-wifi-pass">${escapeHtml(unit.wifiPassword || guide.wifi.password)}</b></div>
+        <div class="kv"><span>${escapeHtml(t.wifiPass)}</span><b id="u-wifi-pass" class="code">${escapeHtml(unit.wifiPassword || guide.wifi.password)}</b></div>
       </div>
       <div class="card times">
         <div class="kv"><span>${icon("clock", "mini")} ${escapeHtml(t.checkIn)}</span><b>${escapeHtml(checkInTime)}</b></div>
@@ -273,7 +320,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const ruleCards = guide.rules.map((r) => `<li>${bi(r.ar, r.en)}</li>`).join("");
   const rules = `
   <section class="wrap reveal">
-    <h2 class="sec-title">${icon("key", "sec-ic")} ${bi(COPY.ar.rulesTitle, COPY.en.rulesTitle)}</h2>
+    ${secHead("shield", COPY.ar.rulesTitle, COPY.en.rulesTitle)}
     <ul class="rules">${ruleCards}</ul>
     ${apartment.checkout_guideline ? `<div class="card"><h3>${escapeHtml(t.checkoutInfo)}</h3><p>${escapeHtml(apartment.checkout_guideline).replace(/\n/g, "<br>")}</p></div>` : ""}
   </section>`;
@@ -289,12 +336,12 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
             : `<li>${label}</li>`;
         })
         .join("");
-      return `<div class="card cat"><div class="card-h">${icon(c.icon, "card-ic")}<span>${escapeHtml(pick(lang, c.titleAr, c.titleEn))}</span></div><ul class="cat-list">${items}</ul></div>`;
+      return `<div class="card cat"><div class="card-h"><span class="chip sm">${icon(c.icon, "chip-ic")}</span><span>${escapeHtml(pick(lang, c.titleAr, c.titleEn))}</span></div><ul class="cat-list">${items}</ul></div>`;
     })
     .join("");
   const nearby = `
   <section class="wrap reveal">
-    <h2 class="sec-title">${icon("pin", "sec-ic")} ${bi(COPY.ar.nearbyTitle, COPY.en.nearbyTitle)}</h2>
+    ${secHead("pin", COPY.ar.nearbyTitle, COPY.en.nearbyTitle)}
     <div class="cats">${cats}</div>
   </section>`;
 
@@ -307,7 +354,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     : "";
   const help = `
   <section class="wrap reveal contact">
-    <h2 class="sec-title">${icon("phone", "sec-ic")} ${bi(COPY.ar.helpTitle, COPY.en.helpTitle)}</h2>
+    ${secHead("phone", COPY.ar.helpTitle, COPY.en.helpTitle)}
     <p class="sec-desc">${escapeHtml(pick(lang, COPY.ar.helpDesc, COPY.en.helpDesc))}</p>
     <div class="actions">${waBtn}${maint}</div>
   </section>`;
@@ -332,8 +379,13 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     ),
   );
 
-  const primary = escapeHtml(env.landing.brandPrimaryColor || "#2E5D4F");
-  const cream = escapeHtml(env.landing.brandSecondaryColor || "#F6F1E7");
+  // Coral is the reference accent. A custom BRAND_PRIMARY_COLOR (anything other
+  // than the legacy default) still overrides it, so the page stays themeable.
+  const customPrimary =
+    env.landing.brandPrimaryColor && env.landing.brandPrimaryColor !== "#0E7C66"
+      ? env.landing.brandPrimaryColor
+      : "";
+  const accent = escapeHtml(customPrimary || "#FF5630");
 
   return `<!DOCTYPE html>
 <html lang="${lang}" dir="${t.dir}">
@@ -341,161 +393,194 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="${primary}">
+<meta name="theme-color" content="#f4f4f6">
 <title>${escapeHtml(brandName)} — ${escapeHtml(apartment.apartment_name)}</title>
 <style>
 ${FONT_CSS}
   :root{
-    --green:${primary};--cream:${cream};
-    --accent:#3C7C64;--accent-dk:#2F6650;--tile:#EEF1EE;--beige:#ECECEA;--navy:#1D1D1F;
-    --ink:#1D1D1F;--muted:#6E6E73;--card:#FFFFFF;--line:#ECECEA;--bg:#F5F5F3;
+    --accent:${accent};--accent-dk:#E8431F;
+    --accent-soft:color-mix(in srgb, var(--accent) 12%, #fff);
+    --accent-ring:color-mix(in srgb, var(--accent) 18%, transparent);
+    --ink:#1D1D1F;--body:#3F3F43;--muted:#86868B;--faint:#AEAEB2;
+    --bg:#F4F4F6;--card:#FFFFFF;--line:rgba(0,0,0,.07);--line-2:rgba(0,0,0,.12);
     --serif:"Thmanyah Serif Display","Iowan Old Style",Palatino,"Noto Naskh Arabic",Georgia,serif;
     --sans:"Thmanyah Sans",system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,Arial,sans-serif;
     --ease:cubic-bezier(.16,1,.3,1);
-    --r:22px;--r-lg:28px;--sh:0 12px 34px rgba(0,0,0,.07);--sh-sm:0 1px 4px rgba(0,0,0,.05);
+    --r-sm:14px;--r:20px;--r-lg:26px;--r-xl:32px;
+    --sh-sm:0 1px 2px rgba(17,20,24,.05);
+    --sh:0 8px 26px rgba(17,20,24,.06);
+    --sh-lg:0 26px 60px rgba(17,20,24,.12);
+    /* Colourful glassy gradient art (no external images) */
+    --art1:radial-gradient(120% 120% at 0% 0%,#b69dff 0%,transparent 58%),radial-gradient(120% 120% at 100% 100%,#7db1ff 0%,transparent 55%),linear-gradient(135deg,#c9b8ff,#9cc4ff);
+    --art2:radial-gradient(120% 120% at 100% 0%,#ffa8b0 0%,transparent 60%),radial-gradient(120% 120% at 0% 100%,#ffc59a 0%,transparent 58%),linear-gradient(135deg,#ffd0cf,#ffb1a0);
+    --art3:radial-gradient(120% 120% at 0% 100%,#8be59b 0%,transparent 60%),radial-gradient(120% 120% at 100% 0%,#caf07f 0%,transparent 58%),linear-gradient(135deg,#bdf0c3,#8fe08a);
+    --art4:radial-gradient(120% 120% at 100% 100%,#7fd0fb 0%,transparent 60%),radial-gradient(120% 120% at 0% 0%,#a9b8ff 0%,transparent 58%),linear-gradient(135deg,#c2e7ff,#8fb6ff);
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:#EEEFF1;
-    background-image:radial-gradient(60% 40% at 12% 0%,rgba(76,160,128,.16),transparent 60%),
-                     radial-gradient(55% 38% at 92% 8%,rgba(122,178,214,.16),transparent 60%),
-                     radial-gradient(70% 50% at 50% 100%,rgba(150,170,235,.12),transparent 60%),
-                     linear-gradient(180deg,#F4F5F7,#E6E8EB);
-    background-attachment:fixed;color:var(--ink);line-height:1.65;font-family:var(--sans);
-    -webkit-font-smoothing:antialiased}
-  /* Frosted-glass surfaces (liquid-glass look). */
-  .glass{background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.48));
-    -webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);
-    border:1px solid rgba(255,255,255,.85);
-    box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95)}
-  img{max-width:100%}
-  .wrap{max-width:680px;margin:0 auto;padding:44px 20px}
-  .reveal{opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  body{margin:0;background:var(--bg);
+    background-image:radial-gradient(60% 30% at 50% 0%,rgba(255,86,48,.05),transparent 70%),
+                     radial-gradient(50% 24% at 100% 4%,rgba(125,177,255,.10),transparent 70%);
+    background-attachment:fixed;color:var(--body);line-height:1.6;font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  img{max-width:100%;display:block}
+  .wrap{max-width:680px;margin:0 auto;padding:34px 20px}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
   .reveal.in{opacity:1;transform:none}
-
-  /* Hero */
-  .hero{position:relative;min-height:88vh;display:flex;flex-direction:column;justify-content:space-between;
-    padding:24px 20px calc(40px + env(safe-area-inset-bottom));color:#fff;overflow:hidden;
-    background:#33433a center/cover no-repeat}
-  .hero>*{position:relative;z-index:1}
-  .hero-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:8px}
-  .hero .logo{max-height:190px;width:auto;max-width:84%;filter:drop-shadow(0 8px 26px rgba(0,0,0,.55))}
-  .wordmark{font-family:var(--serif);font-size:1.4rem;font-weight:600;letter-spacing:.42em;padding-inline-start:4px}
-  .kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;opacity:.95;
-    background:rgba(255,255,255,.14);padding:6px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.22)}
-  .hero-mid{max-width:560px}
-  .eyebrow{display:inline-block;font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;
-    color:#e9dcc4;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(233,220,196,.4)}
-  .hero h1{font-family:var(--serif);font-size:clamp(2.3rem,8vw,3.4rem);margin:0 0 12px;font-weight:700;
-    line-height:1.12;letter-spacing:-.01em;text-shadow:0 2px 24px rgba(0,0,0,.32)}
-  .hero p{font-size:1.12rem;opacity:.96;margin:0 0 26px;max-width:30ch;text-shadow:0 1px 12px rgba(0,0,0,.4)}
-
-  /* Load reveal (above the fold) */
-  .up{opacity:0;transform:translateY(22px);animation:up .9s var(--ease) forwards;animation-delay:var(--d,0s)}
+  .up{opacity:0;transform:translateY(18px);animation:up .85s var(--ease) forwards;animation-delay:var(--d,0s)}
   @keyframes up{to{opacity:1;transform:none}}
 
+  /* Colourful gradient pad + browser mock window */
+  .pad{padding:16px;border-radius:var(--r-xl);position:relative;isolation:isolate}
+  .art-hero{background:
+      radial-gradient(60% 80% at 16% 12%,rgba(167,139,250,.55),transparent 60%),
+      radial-gradient(56% 72% at 88% 16%,rgba(96,165,250,.50),transparent 60%),
+      radial-gradient(70% 80% at 74% 96%,rgba(110,231,170,.45),transparent 60%),
+      radial-gradient(64% 72% at 22% 92%,rgba(255,150,140,.42),transparent 60%),
+      #eef0f4}
+  .mock{border-radius:var(--r-lg);overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.7);box-shadow:var(--sh-lg)}
+  .mock-bar{display:flex;align-items:center;gap:7px;padding:11px 15px;background:#fbfbfd;border-bottom:1px solid var(--line)}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .mock-title{margin-inline-start:9px;font-size:.76rem;color:var(--muted);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .show-img{width:100%;aspect-ratio:16/10;object-fit:cover}
+
+  /* Hero */
+  .hero{padding:46px 20px 6px;text-align:center}
+  .hero-inner{max-width:640px;margin:0 auto}
+  .brandbar{margin-bottom:18px}
+  .hero .logo{filter:brightness(0);opacity:.9;max-height:118px;width:auto;max-width:64%;margin:0 auto}
+  .wordmark{font-family:var(--serif);font-size:1.7rem;font-weight:700;letter-spacing:.34em;color:var(--ink)}
+  .eyebrow{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+    color:var(--accent);background:var(--accent-soft);padding:7px 15px;border-radius:999px;margin-bottom:16px}
+  .hero h1{font-family:var(--serif);font-size:clamp(2.3rem,8.4vw,3.3rem);margin:0 0 12px;font-weight:700;
+    line-height:1.08;letter-spacing:-.022em;color:var(--ink)}
+  .hero .lede{font-size:1.12rem;color:var(--muted);margin:0 auto 24px;max-width:34ch}
+  .showcase{margin-top:30px}
+
   /* Buttons */
-  .btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#54B08C,#2F6650);color:#fff;text-decoration:none;
-    font-weight:600;font-size:1rem;padding:15px 26px;border-radius:999px;border:0;cursor:pointer;
-    box-shadow:0 8px 22px rgba(47,102,80,.34),inset 0 1px 0 rgba(255,255,255,.45);transition:transform .25s ease,box-shadow .25s ease,filter .2s}
-  .btn:hover{transform:translateY(-2px);filter:brightness(1.05);box-shadow:0 12px 28px rgba(47,102,80,.4),inset 0 1px 0 rgba(255,255,255,.45)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    background:linear-gradient(135deg,#FF7A4D,var(--accent));color:#fff;text-decoration:none;
+    font-weight:700;font-size:1rem;padding:15px 26px;border-radius:999px;border:0;cursor:pointer;
+    box-shadow:0 10px 24px var(--accent-ring),inset 0 1px 0 rgba(255,255,255,.4);
+    transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s}
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.04);box-shadow:0 14px 30px var(--accent-ring),inset 0 1px 0 rgba(255,255,255,.4)}
   .btn .btn-ic{width:18px;height:18px}
   html[dir=rtl] .btn .btn-ic{transform:scaleX(-1)}
-  .btn.ghost{background:transparent;color:var(--green);border:1.5px solid var(--green);box-shadow:none}
-  .btn.ghost:hover{background:rgba(46,93,79,.08)}
-  .btn.wa{background:#1f9d57;box-shadow:0 6px 20px rgba(31,157,87,.3)}
-  .btn.wa.disabled{background:#cfc6b4;color:#fff;cursor:default;box-shadow:none}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--sh-sm)}
+  .btn.ghost:hover{background:#fafafa;filter:none}
+  .btn.wa{background:linear-gradient(135deg,#36d870,#1faa53);box-shadow:0 10px 24px rgba(31,170,83,.28)}
+  .btn.wa.disabled{background:#d6d6da;color:#fff;cursor:default;box-shadow:none}
 
-  /* Section titles */
-  .sec-title{display:flex;align-items:center;gap:11px;flex-wrap:wrap;font-family:var(--serif);
-    font-size:1.42rem;font-weight:600;margin:0 0 10px;color:var(--ink);letter-spacing:-.015em}
-  .sec-ic{width:38px;height:38px;padding:8px;background:var(--tile);border-radius:11px;color:var(--accent);flex:none}
-  .apt-name{font-family:var(--sans);font-size:.92rem;color:var(--muted);font-weight:500}
-  .sec-desc{color:var(--muted);margin:0 0 20px}
-  .sub{font-family:var(--serif);font-size:1.18rem;color:var(--green);margin:26px 0 14px}
+  /* Section heads (coral chip + serif two-tone) */
+  .sec-head{display:flex;align-items:flex-start;gap:13px;margin:0 0 16px}
+  .chip{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;
+    background:var(--accent-soft);color:var(--accent)}
+  .chip.sm{width:34px;height:34px;border-radius:10px}
+  .chip-ic{width:22px;height:22px}
+  .chip.sm .chip-ic{width:18px;height:18px}
+  .sec-text{min-width:0}
+  .sec-title{font-family:var(--serif);font-size:clamp(1.5rem,5.4vw,1.92rem);font-weight:700;
+    color:var(--ink);letter-spacing:-.02em;line-height:1.14;margin:0}
+  .sec-sub{display:block;color:var(--muted);font-size:.92rem;margin-top:3px}
+  .apt-name{font-family:var(--sans);font-size:.9rem;color:var(--muted);font-weight:500}
+  .sec-desc{color:var(--muted);margin:-6px 0 20px}
+  .sub{font-family:var(--serif);font-size:1.2rem;color:var(--ink);font-weight:700;margin:28px 0 14px;letter-spacing:-.01em}
+
+  /* Highlights strip (big numbers) */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border:1px solid var(--line);
+    border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+  .stat{padding:20px 12px;text-align:center;border-inline-end:1px solid var(--line)}
+  .stat:last-child{border-inline-end:0}
+  .stat b{font-family:var(--serif);font-size:1.75rem;color:var(--ink);display:block;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .stat span{color:var(--muted);font-size:.8rem;display:block;margin-top:2px}
 
   /* Cards */
-  .card{background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.48));-webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);border:1px solid rgba(255,255,255,.85);border-radius:var(--r);padding:18px;
-    margin:14px 0;box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95)}
-  .card-h{display:flex;align-items:center;gap:11px;font-weight:700;color:var(--ink);margin-bottom:10px}
-  .card-ic{width:34px;height:34px;padding:7px;background:var(--tile);border-radius:10px;color:var(--accent);flex:none}
-  .card h3{margin:0 0 8px;color:var(--navy);font-family:var(--serif);font-size:1.12rem;font-weight:600}
-  .card p{margin:0;color:var(--ink)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:14px 0;box-shadow:var(--sh)}
+  .card-h{display:flex;align-items:center;gap:11px;font-weight:700;color:var(--ink);margin-bottom:12px}
+  .card h3{margin:0 0 8px;color:var(--ink);font-family:var(--serif);font-size:1.12rem;font-weight:700}
+  .card p{margin:0;color:var(--body)}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
   .kv:last-child{border-bottom:0}
-  .kv span{color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-size:.93rem}
-  .kv b{color:var(--ink);font-variant-numeric:tabular-nums;text-align:end;letter-spacing:.02em}
+  .kv span{color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-size:.92rem}
+  .kv b{color:var(--ink);font-variant-numeric:tabular-nums;text-align:end;letter-spacing:.01em}
+  .kv b.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--accent-soft);color:var(--accent-dk);
+    padding:3px 10px;border-radius:8px;font-weight:700}
+  .kv b.code .soft{background:none;padding:0;color:var(--muted)}
+  .kv b.code:has(.soft){background:none;padding:0;font-family:var(--sans);font-weight:500}
   .mini{width:15px;height:15px}
-  .soft{color:var(--muted);font-style:italic;font-weight:500;font-size:.88rem}
+  .soft{color:var(--muted);font-style:italic;font-weight:500;font-size:.86rem}
 
-  /* Bilingual */
-  .bi{display:flex;flex-direction:column}
-  .bi .ar{font-weight:600}
-  .bi .en{font-size:.8rem;color:var(--muted);font-weight:500;letter-spacing:.01em}
+  /* Bilingual line items */
+  .bi{display:flex;flex-direction:column;min-width:0}
+  .bi .ar{font-weight:600;color:var(--ink)}
+  .bi .en{font-size:.78rem;color:var(--muted);font-weight:500}
 
-  /* Selector */
-  .seg-wrap{display:flex;gap:6px;background:linear-gradient(160deg,rgba(255,255,255,.6),rgba(255,255,255,.35));-webkit-backdrop-filter:blur(30px) saturate(190%);backdrop-filter:blur(30px) saturate(190%);border:1px solid rgba(255,255,255,.85);padding:6px;border-radius:999px;width:fit-content;margin:0 auto 18px;box-shadow:0 6px 20px rgba(17,20,24,.08),inset 0 1px 0 rgba(255,255,255,.8)}
-  .seg{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:.95rem;letter-spacing:.06em;padding:10px 30px;border-radius:999px;cursor:pointer;transition:.25s}
-  .seg.on{background:var(--card);color:var(--green);box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95)}
-  .unit-card .unit-name{margin:0 0 12px;color:var(--navy);font-family:var(--serif);font-size:1.3rem;font-weight:600}
+  /* Selector pill toggle */
+  .seg-row{display:flex;justify-content:center;margin-bottom:16px}
+  .seg-wrap{display:inline-flex;gap:4px;background:#e9e9ed;padding:5px;border-radius:999px;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+  .seg{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:.94rem;letter-spacing:.02em;padding:9px 28px;border-radius:999px;cursor:pointer;transition:.25s var(--ease)}
+  .seg.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.02)}
+  .unit-card .kicker{display:inline-block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:6px}
+  .unit-card .unit-name{margin:0 0 12px;color:var(--ink);font-family:var(--serif);font-size:1.34rem;font-weight:700;letter-spacing:-.01em}
   .unit-card .note{margin:12px 0 0;color:var(--muted);font-size:.92rem}
 
-  /* Check-in */
-  .way{margin:16px 0 18px}
-  .way-img{width:100%;border-radius:var(--r-lg);display:block;box-shadow:var(--sh);border:1px solid var(--line);aspect-ratio:4/3;object-fit:cover}
+  /* Check-in steps (feature grid + colourful tiles) */
+  .way{margin:4px 0 18px}
   .steps{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .step{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.48));-webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);border:1px solid rgba(255,255,255,.85);border-radius:var(--r);padding:18px 15px;box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95);display:flex;flex-direction:column;gap:9px;transition:transform .25s ease,box-shadow .25s ease}
-  .step:hover{transform:translateY(-3px);box-shadow:var(--sh)}
-  .step .ic{width:40px;height:40px;padding:9px;background:var(--tile);border-radius:12px;color:var(--accent)}
-  .step .num{position:absolute;top:12px;inset-inline-end:14px;width:25px;height:25px;border-radius:50%;background:var(--green);color:#fff;font-size:.8rem;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums}
-  .access{margin-top:16px;border-inline-start:4px solid var(--accent)}
+  .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 15px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  .step:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+  .step .num{position:absolute;top:13px;inset-inline-end:14px;width:25px;height:25px;border-radius:50%;background:var(--accent);color:#fff;font-size:.8rem;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums;box-shadow:0 4px 10px var(--accent-ring)}
+
+  /* Colourful gradient icon tiles */
+  .tile-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;
+    box-shadow:inset 0 1px 2px rgba(255,255,255,.5),0 6px 16px rgba(17,20,24,.12)}
+  .tile-ic .ic{width:22px;height:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+  .steps .step:nth-child(4n+1) .tile-ic,.svc-grid .svc:nth-child(4n+1) .tile-ic{background:var(--art1)}
+  .steps .step:nth-child(4n+2) .tile-ic,.svc-grid .svc:nth-child(4n+2) .tile-ic{background:var(--art2)}
+  .steps .step:nth-child(4n+3) .tile-ic,.svc-grid .svc:nth-child(4n+3) .tile-ic{background:var(--art3)}
+  .steps .step:nth-child(4n) .tile-ic,.svc-grid .svc:nth-child(4n) .tile-ic{background:var(--art4)}
+  .access{margin-top:16px;border-inline-start:3px solid var(--accent)}
 
   /* Video */
-  .video{position:relative;padding-top:56.25%;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh)}
-  .video.vertical{max-width:340px;margin-inline:auto;padding-top:min(177.78%,604px)}
+  .video{position:relative;padding-top:56.25%;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000}
+  .video.vertical{max-width:330px;margin-inline:auto;padding-top:min(177.78%,586px)}
   .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .video-el{width:100%;border-radius:var(--r-lg);box-shadow:var(--sh);display:block;background:#000}
+  .video-el{width:100%;border-radius:var(--r-lg);box-shadow:var(--sh-lg);background:#000}
 
   /* Placeholders */
-  .ph{background:repeating-linear-gradient(135deg,#f4f4f2,#f4f4f2 12px,#ececea 12px,#ececea 24px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);border:1px dashed #dcdcd8;text-align:center;padding:24px}
-  .video-ph{border-radius:var(--r);padding:52px 24px}
-  .way-img.ph{aspect-ratio:4/3}
-  .ph-ic{width:32px;height:32px;color:var(--muted)}
+  .ph{background:#f3f3f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);border:1px dashed var(--line-2);text-align:center;padding:30px;aspect-ratio:16/10}
+  .video-ph{border-radius:var(--r);padding:52px 24px;aspect-ratio:auto}
+  .ph-ic{width:30px;height:30px;color:var(--faint)}
 
   /* Services */
   .svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  .svc{display:flex;align-items:center;gap:12px;background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.48));-webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);border:1px solid rgba(255,255,255,.85);border-radius:14px;padding:14px 15px;box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95);transition:transform .25s ease,box-shadow .25s ease}
-  .svc:hover{transform:translateY(-3px);box-shadow:var(--sh)}
-  .svc-ic{width:40px;height:40px;padding:9px;background:var(--tile);border-radius:11px;color:var(--accent);flex:none}
-  /* Glass treatment for icon tiles (overrides the solid --tile fill). */
-  .sec-ic,.card-ic,.svc-ic,.step .ic{
-    background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(255,255,255,.55));
-    -webkit-backdrop-filter:blur(18px) saturate(200%);backdrop-filter:blur(18px) saturate(200%);
-    border:1px solid rgba(255,255,255,.85);
-    box-shadow:0 4px 14px rgba(17,20,24,.10),inset 0 1px 1px rgba(255,255,255,.95)}
+  .svc{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--sh);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  .svc:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
 
   /* Rules */
   .rules{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-  .rules li{background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.48));-webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);border:1px solid rgba(255,255,255,.85);border-radius:14px;padding:14px 16px;box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95);position:relative;padding-inline-start:44px}
-  .rules li::before{content:"";position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(60,124,100,.14)}
+  .rules li{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);position:relative;padding-inline-start:44px}
+  .rules li::before{content:"";position:absolute;inset-inline-start:17px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 
   /* Nearby */
-  .cat-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-  .cat-list li{padding:9px 0;border-bottom:1px dashed var(--line)}
+  .cat-list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+  .cat-list li{padding:10px 0;border-bottom:1px solid var(--line)}
   .cat-list li:last-child{border-bottom:0}
   .cat-list a{display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;color:inherit}
-  .li-ic{width:17px;height:17px;color:var(--green);flex:none}
+  .li-ic{width:17px;height:17px;color:var(--accent);flex:none}
 
   /* Contact */
   .contact .actions{display:flex;flex-direction:column;gap:12px;max-width:420px}
-  .contact .btn{justify-content:center}
 
   /* Floating quick action (mobile) */
-  .fab{position:fixed;inset-inline:0;bottom:0;display:none;justify-content:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(245,245,243,0),var(--bg) 38%);z-index:50}
-  .fab .btn{width:100%;max-width:520px;justify-content:center}
+  .fab{position:fixed;inset-inline:0;bottom:0;display:none;justify-content:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(244,244,246,0),var(--bg) 42%);z-index:50}
+  .fab .btn{width:100%;max-width:520px}
 
-  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:30px 18px 44px;font-family:var(--serif);letter-spacing:.04em}
+  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:34px 18px 44px}
+  footer .logo{filter:brightness(0);opacity:.45;max-height:46px;width:auto;margin:0 auto 12px}
+  footer .fnote{font-family:var(--serif);letter-spacing:.03em}
 
   @media (max-width:430px){
     .grid2{grid-template-columns:1fr}
@@ -512,6 +597,7 @@ ${FONT_CSS}
 <body>
 ${hero}
 <main>
+${highlights}
 ${video}
 ${checkin}
 ${selector}
@@ -521,7 +607,7 @@ ${nearby}
 ${help}
 </main>
 <div class="fab"><a class="btn" href="#video">${escapeHtml(t.cta)}</a></div>
-<footer>${escapeHtml(brandName)} · ${escapeHtml(apartment.apartment_name)}</footer>
+<footer>${logo}<div class="fnote">${escapeHtml(brandName)} · ${escapeHtml(apartment.apartment_name)}</div></footer>
 <script>
 (function(){
   var els=document.querySelectorAll('.reveal');
