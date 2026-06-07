@@ -3,8 +3,10 @@
 The `/api/intake/ocr` endpoint reads an Airbnb booking screenshot and extracts
 the reservation fields using an **OpenAI-compatible vision model**
 (`services/ocr.ts`). The model is configurable and provider-agnostic — point
-`OCR_API_BASE_URL` / `OCR_API_KEY` / `OCR_MODEL` at any cheap, accurate
-Arabic+English vision model (e.g. a Qwen2.5-VL variant via OpenRouter).
+`OCR_API_BASE_URL` / `OCR_API_KEY` / `OCR_MODEL` at any accurate Arabic+English
+vision model. Recommended for high accuracy: `google/gemini-3-flash-preview`
+(stronger alternatives: `qwen/qwen3-vl-235b-a22b-instruct`, `google/gemini-2.5-pro`;
+cheaper: `google/gemini-2.5-flash-lite`).
 
 ## System prompt
 

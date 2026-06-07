@@ -174,7 +174,7 @@ WA_TEMPLATE_ACCESS_AR=apt_access_ar  # + EN and checkout/review variants
 # OCR (OpenAI-compatible provider, e.g. OpenRouter / your aggregator)
 OCR_API_BASE_URL=https://openrouter.ai/api/v1
 OCR_API_KEY=
-OCR_MODEL=qwen/qwen2.5-vl-72b-instruct
+OCR_MODEL=google/gemini-3-flash-preview   # high accuracy; or qwen/qwen3-vl-235b-a22b-instruct
 
 # Google Sheets
 GOOGLE_SHEETS_ID=

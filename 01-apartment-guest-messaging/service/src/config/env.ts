@@ -93,7 +93,7 @@ export function loadEnv(): Env {
     ocr: {
       baseUrl: str("OCR_API_BASE_URL", "https://openrouter.ai/api/v1"),
       apiKey: str("OCR_API_KEY"),
-      model: str("OCR_MODEL", "qwen/qwen2.5-vl-72b-instruct"),
+      model: str("OCR_MODEL", "google/gemini-3-flash-preview"),
     },
 
     sheets: {
