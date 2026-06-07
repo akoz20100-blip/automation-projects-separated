@@ -13,7 +13,7 @@ import { sendMessage, sendText } from "../services/whatsapp.js";
 import { renderNotify } from "../services/templates.js";
 import { isCheckoutAfterCheckin, dueCheckoutDate, todayInTz } from "../domain/dates.js";
 import { env } from "../config/env.js";
-import type { Channel, MessageType, NotifyType, PreparedMessage } from "../types.js";
+import type { Channel, DeliveryStatus, MessageType, NotifyType, PreparedMessage } from "../types.js";
 
 const notifySchema = z.object({
   reservation_id: z.string().min(1),
@@ -110,34 +110,43 @@ messagesRouter.post("/send", async (req: Request, res: Response) => {
   res.json(out);
 });
 
-messagesRouter.post("/notify", async (req: Request, res: Response) => {
-  const body = notifySchema.parse(req.body);
-  const { phone, who } = notifyRecipient(body.notify_type);
-  if (!phone) {
-    res.status(400).json({ error: `no ${who} phone configured (set OWNER_PHONE / CLEANER_PHONE)` });
-    return;
-  }
+export interface NotifyResult {
+  notify_type: NotifyType;
+  status: DeliveryStatus | "already_sent" | "skipped_no_phone";
+  recipient: string;
+  recipient_phone?: string;
+  channel?: Channel;
+  text?: string;
+  whatsapp_link?: string;
+}
 
-  const reservation = await getReservation(body.reservation_id);
-  if (!reservation) throw new Error(`reservation not found: ${body.reservation_id}`);
+/** Send one owner/cleaner notification for a reservation (dedupe + log).
+ * Reused by the /notify route and the daily scheduler (services/scheduler.ts). */
+export async function sendNotifyForReservation(
+  reservationId: string,
+  notifyType: NotifyType,
+  force: boolean,
+): Promise<NotifyResult> {
+  const { phone, who } = notifyRecipient(notifyType);
+  if (!phone) return { notify_type: notifyType, status: "skipped_no_phone", recipient: who };
+
+  const reservation = await getReservation(reservationId);
+  if (!reservation) throw new Error(`reservation not found: ${reservationId}`);
   const apartment = await getApartment(reservation.apartment_id);
   if (!apartment) throw new Error(`apartment not found: ${reservation.apartment_id}`);
 
-  if (!body.force) {
-    const dup = await checkAlreadySent(body.reservation_id, body.notify_type);
-    if (dup.alreadySent) {
-      res.json({ notify_type: body.notify_type, status: "already_sent", recipient: who });
-      return;
-    }
+  if (!force) {
+    const dup = await checkAlreadySent(reservationId, notifyType);
+    if (dup.alreadySent) return { notify_type: notifyType, status: "already_sent", recipient: who };
   }
 
-  const text = renderNotify(body.notify_type, reservation, apartment);
+  const text = renderNotify(notifyType, reservation, apartment);
   const result = await sendText(phone, text);
 
   await appendMessageLog({
     timestamp: new Date().toISOString(),
-    reservation_id: body.reservation_id,
-    message_type: body.notify_type,
+    reservation_id: reservationId,
+    message_type: notifyType,
     channel: result.channel,
     recipient_phone: phone,
     template_name: "",
@@ -149,15 +158,27 @@ messagesRouter.post("/notify", async (req: Request, res: Response) => {
     sent_at: result.status === "accepted" ? new Date().toISOString() : "",
   });
 
-  res.json({
-    notify_type: body.notify_type,
+  return {
+    notify_type: notifyType,
     status: result.status,
     recipient: who,
     recipient_phone: phone,
     channel: result.channel,
     text: result.text,
     whatsapp_link: result.whatsapp_link,
-  });
+  };
+}
+
+messagesRouter.post("/notify", async (req: Request, res: Response) => {
+  const body = notifySchema.parse(req.body);
+  const out = await sendNotifyForReservation(body.reservation_id, body.notify_type, body.force);
+  if (out.status === "skipped_no_phone") {
+    res
+      .status(400)
+      .json({ error: `no ${out.recipient} phone configured (set OWNER_PHONE / CLEANER_PHONE)` });
+    return;
+  }
+  res.json(out);
 });
 
 messagesRouter.get("/due", async (req: Request, res: Response) => {

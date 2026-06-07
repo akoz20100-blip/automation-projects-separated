@@ -74,6 +74,10 @@ export interface Env {
     phone: string;
     name: string;
   };
+
+  cron: {
+    secret: string;
+  };
 }
 
 export function loadEnv(): Env {
@@ -137,6 +141,10 @@ export function loadEnv(): Env {
       notifyEnabled: bool("CLEANER_NOTIFY_ENABLED", false),
       phone: str("CLEANER_PHONE"),
       name: str("CLEANER_NAME", "Sara"),
+    },
+
+    cron: {
+      secret: str("CRON_SECRET"),
     },
   };
 }

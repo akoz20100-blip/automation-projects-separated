@@ -10,6 +10,7 @@ import { reservationsRouter } from "./routes/reservations.js";
 import { messagesRouter } from "./routes/messages.js";
 import { landingRouter } from "./routes/landing.js";
 import { webhooksRouter } from "./routes/webhooks.js";
+import { cronRouter } from "./routes/cron.js";
 
 export function createApp() {
   const app = express();
@@ -29,6 +30,8 @@ export function createApp() {
   // Public (no bearer auth): landing page + Meta webhook.
   app.use("/api/landing", landingRouter);
   app.use("/api/webhooks", webhooksRouter);
+  // Scheduled jobs — guarded internally by CRON_SECRET (Vercel Cron / external).
+  app.use("/api/cron", cronRouter);
 
   // Authenticated API.
   app.use("/api/intake", requireAuth, intakeRouter);
