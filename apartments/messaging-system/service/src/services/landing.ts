@@ -183,7 +183,6 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     : `<span class="wordmark">${escapeHtml(guide.brand.nameEn)}</span>`;
   const hero = `
   <header class="hero" ${heroImg ? `style="background-image:linear-gradient(180deg,rgba(22,28,22,.66) 0%,rgba(24,30,24,.46) 40%,rgba(22,28,22,.84) 100%),url('${escapeHtml(heroImg)}')"` : ""}>
-    <div class="grain"></div>
     <div class="hero-top up" style="--d:.05s">${logo}<span class="kicker">${escapeHtml(pick(lang, guide.brand.headerAr, guide.brand.headerEn))}</span></div>
     <div class="hero-mid">
       <span class="eyebrow up" style="--d:.15s">${escapeHtml(t.eyebrow)}</span>
@@ -370,13 +369,9 @@ ${FONT_CSS}
     border:1px solid rgba(255,255,255,.85);
     box-shadow:0 16px 44px rgba(17,20,24,.12),inset 0 1px 0 rgba(255,255,255,.95)}
   img{max-width:100%}
-  .wrap{max-width:680px;margin:0 auto;padding:30px 18px}
+  .wrap{max-width:680px;margin:0 auto;padding:44px 20px}
   .reveal{opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
   .reveal.in{opacity:1;transform:none}
-
-  /* Grain texture overlay */
-  .grain{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
 
   /* Hero */
   .hero{position:relative;min-height:88vh;display:flex;flex-direction:column;justify-content:space-between;
@@ -413,7 +408,7 @@ ${FONT_CSS}
 
   /* Section titles */
   .sec-title{display:flex;align-items:center;gap:11px;flex-wrap:wrap;font-family:var(--serif);
-    font-size:1.5rem;font-weight:700;margin:0 0 8px;color:var(--navy);letter-spacing:-.01em}
+    font-size:1.42rem;font-weight:600;margin:0 0 10px;color:var(--ink);letter-spacing:-.015em}
   .sec-ic{width:38px;height:38px;padding:8px;background:var(--tile);border-radius:11px;color:var(--accent);flex:none}
   .apt-name{font-family:var(--sans);font-size:.92rem;color:var(--muted);font-weight:500}
   .sec-desc{color:var(--muted);margin:0 0 20px}
