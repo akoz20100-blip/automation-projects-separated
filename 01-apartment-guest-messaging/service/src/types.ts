@@ -2,7 +2,7 @@
 
 export type MessageType = "access" | "checkout" | "review";
 export type Language = "ar" | "en";
-export type Channel = "whatsapp_cloud_api" | "whatsapp_link";
+export type Channel = "whatsapp_cloud_api" | "whatsapp_link" | "whatsapp_wasender";
 
 export type DeliveryStatus =
   | "accepted"

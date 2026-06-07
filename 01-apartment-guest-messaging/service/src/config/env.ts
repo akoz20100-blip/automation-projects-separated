@@ -5,7 +5,7 @@
  * external credentials.
  */
 
-export type WhatsAppMode = "cloud_api" | "manual_link";
+export type WhatsAppMode = "cloud_api" | "manual_link" | "wasender";
 
 function str(name: string, fallback = ""): string {
   const v = process.env[name];
@@ -40,6 +40,11 @@ export interface Env {
     };
   };
 
+  wasender: {
+    apiKey: string;
+    apiUrl: string;
+  };
+
   ocr: {
     baseUrl: string;
     apiKey: string;
@@ -66,14 +71,16 @@ export interface Env {
 }
 
 export function loadEnv(): Env {
-  const whatsappMode = (str("WHATSAPP_MODE", "manual_link") as WhatsAppMode);
+  const rawMode = str("WHATSAPP_MODE", "manual_link");
+  const whatsappMode: WhatsAppMode =
+    rawMode === "cloud_api" || rawMode === "wasender" ? rawMode : "manual_link";
 
   return {
     appEnv: str("APP_ENV", "development"),
     port: Number(str("PORT", "3000")),
     apiSecret: str("API_SECRET", "local_secret"),
     timezone: str("DEFAULT_TIMEZONE", "Asia/Riyadh"),
-    whatsappMode: whatsappMode === "cloud_api" ? "cloud_api" : "manual_link",
+    whatsappMode,
 
     whatsapp: {
       graphVersion: str("WHATSAPP_GRAPH_VERSION", "v21.0"),
@@ -88,6 +95,11 @@ export function loadEnv(): Env {
         review: { ar: str("WA_TEMPLATE_REVIEW_AR", "apt_review_ar"), en: str("WA_TEMPLATE_REVIEW_EN", "apt_review_en") },
         owner: { ar: str("WA_TEMPLATE_OWNER_AR", "apt_owner_notify_ar") },
       },
+    },
+
+    wasender: {
+      apiKey: str("WASENDER_API_KEY"),
+      apiUrl: str("WASENDER_API_URL", "https://www.wasenderapi.com/api/send-message"),
     },
 
     ocr: {

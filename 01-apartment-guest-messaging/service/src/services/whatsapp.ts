@@ -23,6 +23,45 @@ export function buildWaLink(phone: string, text: string): string {
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
+/**
+ * Send free-form text via WasenderAPI (third-party WhatsApp gateway).
+ * No Meta template approval needed — the rendered message text is sent directly.
+ * Docs: POST /api/send-message { to: "+E164", text }.
+ */
+export async function sendViaWasender(toPhone: string, text: string): Promise<SendResult> {
+  const res = await fetch(env.wasender.apiUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.wasender.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ to: `+${toPhone}`, text }),
+  });
+
+  const bodyText = await res.text();
+  if (!res.ok) {
+    throw new Error(`WasenderAPI send failed (${res.status}): ${bodyText}`);
+  }
+
+  let messageId = "";
+  try {
+    const data = JSON.parse(bodyText) as {
+      data?: { msgId?: string | number; id?: string | number };
+      msgId?: string | number;
+    };
+    messageId = String(data.data?.msgId ?? data.data?.id ?? data.msgId ?? "");
+  } catch {
+    /* non-JSON success body — leave id empty */
+  }
+
+  return {
+    channel: "whatsapp_wasender",
+    message_id: messageId,
+    text,
+    status: "accepted",
+  };
+}
+
 /** Build the Graph API request body for a template message. */
 export function buildTemplatePayload(
   type: MessageType,
@@ -68,6 +107,10 @@ export async function sendMessage(
       text,
       status: "ready",
     };
+  }
+
+  if (env.whatsappMode === "wasender") {
+    return sendViaWasender(toPhone, text);
   }
 
   const payload = buildTemplatePayload(type, reservation, apartment, toPhone);

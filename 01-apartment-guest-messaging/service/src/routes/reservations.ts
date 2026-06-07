@@ -61,6 +61,15 @@ function prepareOne(
       whatsapp_link: buildWaLink(reservation.guest_phone, text),
     };
   }
+  if (env.whatsappMode === "wasender") {
+    return {
+      type,
+      status: "ready",
+      channel: "whatsapp_wasender",
+      recipient_phone: reservation.guest_phone,
+      text,
+    };
+  }
   return {
     type,
     status: "ready",

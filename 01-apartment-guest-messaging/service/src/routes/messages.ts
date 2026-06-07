@@ -11,9 +11,16 @@ import { checkAlreadySent } from "../services/idempotency.js";
 import { sendMessage } from "../services/whatsapp.js";
 import { isCheckoutAfterCheckin, dueCheckoutDate } from "../domain/dates.js";
 import { env } from "../config/env.js";
-import type { MessageType, PreparedMessage } from "../types.js";
+import type { Channel, MessageType, PreparedMessage } from "../types.js";
 
 export const messagesRouter = Router();
+
+/** The channel implied by the current send mode. */
+export function currentChannel(): Channel {
+  if (env.whatsappMode === "cloud_api") return "whatsapp_cloud_api";
+  if (env.whatsappMode === "wasender") return "whatsapp_wasender";
+  return "whatsapp_link";
+}
 
 /** Core orchestration: validate, dedupe, send, log. Reused by send + due loop. */
 export async function sendForReservation(
@@ -41,7 +48,7 @@ export async function sendForReservation(
       return {
         type: messageType,
         status: "already_sent",
-        channel: env.whatsappMode === "cloud_api" ? "whatsapp_cloud_api" : "whatsapp_link",
+        channel: currentChannel(),
         recipient_phone: reservation.guest_phone,
         text: "",
         message_id: dup.messageId,
