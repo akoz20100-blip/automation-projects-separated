@@ -10,6 +10,7 @@
 
 import type { Apartment, Language, MessageType, NotifyType, Reservation } from "../types.js";
 import { env } from "../config/env.js";
+import { resolveDoorCode } from "../data/doorCodes.js";
 
 /**
  * Internal notification templates (owner / cleaner), Arabic — these recipients
@@ -31,13 +32,13 @@ type TemplateKey = `${MessageType}_${Language}`;
 
 export const MESSAGE_TEMPLATES: Record<TemplateKey, string> = {
   access_ar:
-    "أهلاً وسهلاً {{guest_name}} 🌟\nتم تأكيد حجزك في {{apartment_name}}، ويسعدنا استضافتك.\n\n📅 تاريخ الدخول: {{check_in_date}}\n🕒 وقت الدخول: {{check_in_time}}\n\n🔑 طريقة الدخول:\n{{access_guideline}}\n\n📲 دليل الدخول والمبنى (صورة المدخل وفيديو الشرح وكل التفاصيل):\n{{landing_url}}\n\nنتمنى لك إقامة سعيدة، وإذا احتجت أي شيء فنحن في خدمتك. 🌿",
+    "أهلاً وسهلاً {{guest_name}} 🌟\nتم تأكيد حجزك في {{apartment_name}}، ويسعدنا استضافتك.\n\n📅 تاريخ الدخول: {{check_in_date}}\n🕒 وقت الدخول: {{check_in_time}}\n\n🔑 طريقة الدخول:\n{{access_guideline}}\n\n{{door_block}}📲 دليل الدخول والمبنى (صورة المدخل وفيديو الشرح وكل التفاصيل):\n{{landing_url}}\n\nنتمنى لك إقامة سعيدة، وإذا احتجت أي شيء فنحن في خدمتك. 🌿",
   checkout_ar:
     "{{guest_name}}، نتمنى أن إقامتك في {{apartment_name}} كانت ممتعة 🌿\n\nتذكير ودّي بأن موعد تسجيل الخروج هو {{check_out_date}} الساعة {{check_out_time}}.\n\n✅ قبل المغادرة:\n{{checkout_guideline}}\n\nشكراً لاختيارك الإقامة معنا، ونسعد بعودتك دائماً. 🤍",
   review_ar:
     "{{guest_name}}، سعدنا كثيراً باستضافتك في {{apartment_name}} 🌟\n\nإذا كانت تجربتك جميلة، يشرّفنا تقييمك على Airbnb — رأيك يهمنا ويساعد ضيوفنا القادمين:\n{{airbnb_review_url}}\n\nشكراً لك، ونتمنى لك يوماً سعيداً. 🤍",
   access_en:
-    "Welcome {{guest_name}}! 🌟\nYour reservation at {{apartment_name}} is confirmed and we're delighted to host you.\n\n📅 Check-in date: {{check_in_date}}\n🕒 Check-in time: {{check_in_time}}\n\n🔑 How to enter:\n{{access_guideline}}\n\n📲 Building & access guide (entrance photo, how-to-enter video & full details):\n{{landing_url}}\n\nEnjoy your stay — we're here if you need anything. 🌿",
+    "Welcome {{guest_name}}! 🌟\nYour reservation at {{apartment_name}} is confirmed and we're delighted to host you.\n\n📅 Check-in date: {{check_in_date}}\n🕒 Check-in time: {{check_in_time}}\n\n🔑 How to enter:\n{{access_guideline}}\n\n{{door_block}}📲 Building & access guide (entrance photo, how-to-enter video & full details):\n{{landing_url}}\n\nEnjoy your stay — we're here if you need anything. 🌿",
   checkout_en:
     "{{guest_name}}, we hope you enjoyed your stay at {{apartment_name}} 🌿\n\nA friendly reminder that checkout is on {{check_out_date}} at {{check_out_time}}.\n\n✅ Before you leave:\n{{checkout_guideline}}\n\nThank you for staying with us — you're always welcome back. 🤍",
   review_en:
@@ -60,6 +61,17 @@ export function templateVars(
   apartment: Apartment,
 ): Record<string, string> {
   const lang = reservation.guest_language;
+  const doorCode = resolveDoorCode(reservation.apartment_id, {
+    doorCode: reservation.door_code,
+    reservationId: reservation.reservation_id,
+  });
+  // Only render the door-code block when a code exists, so apartments without a
+  // pool don't show an empty line (the landing keeps the "sent via WhatsApp" note).
+  const doorBlock = doorCode
+    ? lang === "ar"
+      ? `🔐 رمز الباب الذكي: ${doorCode}\nأدخل الرمز على القفل ثم اضغط 🔓.\n\n`
+      : `🔐 Smart-lock code: ${doorCode}\nEnter it on the lock, then press 🔓.\n\n`
+    : "";
   return {
     guest_name: reservation.guest_name,
     apartment_name: reservation.apartment_name || apartment.apartment_name,
@@ -73,6 +85,8 @@ export function templateVars(
       reservation.airbnb_review_url || apartment.airbnb_review_url || "https://airbnb.com/",
     landing_url: landingUrl(reservation.apartment_id, lang),
     guest_phone: reservation.guest_phone,
+    door_code: doorCode,
+    door_block: doorBlock,
   };
 }
 

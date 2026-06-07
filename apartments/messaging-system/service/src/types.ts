@@ -32,6 +32,8 @@ export interface Reservation {
   ocr_needs_review?: boolean;
   guest_phone_confidence?: string;
   airbnb_review_url?: string;
+  /** Smart-lock passcode for this guest. Empty -> derived from the apartment pool. */
+  door_code?: string;
 }
 
 /** An apartment row as stored in the Google Sheet `Apartments`. */

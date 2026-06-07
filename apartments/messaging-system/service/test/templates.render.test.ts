@@ -37,6 +37,20 @@ describe("renderText", () => {
     expect(text).toContain("/api/landing/apt_01");
   });
 
+  it("includes a rotating D1 door code in the access message", () => {
+    const text = renderText("access", reservation, apartment);
+    expect(text).toContain("🔐");
+    // the code is one of the D1 pool entries
+    expect(text).toMatch(/رمز الباب الذكي: (0555|4050|5060|6070)/);
+  });
+
+  it("omits the door-code block for an apartment without a pool", () => {
+    const r2 = { ...reservation, apartment_id: "apt_02" };
+    const a2 = { ...apartment, apartment_id: "apt_02" };
+    const text = renderText("access", r2, a2);
+    expect(text).not.toContain("🔐");
+  });
+
   it("renders the checkout reminder with checkout date/time", () => {
     const text = renderText("checkout", reservation, apartment);
     expect(text).toContain("2026-06-13");
