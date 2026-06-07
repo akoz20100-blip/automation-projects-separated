@@ -100,12 +100,10 @@ export const guide = {
     /** The ANNOTATED exterior image (entrance/parking/first-floor labels) for check-in. */
     wayfindingImageUrl: `${MEDIA_BASE}/wayfinding.png`,
     /**
-     * Check-in video. YouTube/Vimeo link -> embed; a direct .mp4 -> <video>.
-     * Falls back to the sheet video_url.
-     * TODO(owner): paste the Unlisted YouTube link here once uploaded,
-     *   e.g. "https://youtu.be/XXXXXXXXXXX". Empty -> elegant placeholder.
+     * Check-in video. YouTube (incl. Shorts)/Vimeo link -> embed; a direct
+     * .mp4 -> <video>. Falls back to the sheet video_url.
      */
-    videoUrl: "",
+    videoUrl: "https://youtube.com/shorts/p30BRswZqb0",
     /** Poster shown before the video loads (recommended for performance). */
     videoPoster: `${MEDIA_BASE}/living-room-2.jpg`,
     /**

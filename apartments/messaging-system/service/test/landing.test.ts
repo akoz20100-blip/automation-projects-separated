@@ -21,6 +21,11 @@ describe("toEmbedUrl", () => {
   it("converts youtu.be links", () => {
     expect(toEmbedUrl("https://youtu.be/abc123XYZ")).toBe("https://www.youtube.com/embed/abc123XYZ");
   });
+  it("converts youtube shorts links", () => {
+    expect(toEmbedUrl("https://youtube.com/shorts/p30BRswZqb0")).toBe(
+      "https://www.youtube.com/embed/p30BRswZqb0",
+    );
+  });
   it("converts youtube watch links", () => {
     expect(toEmbedUrl("https://www.youtube.com/watch?v=abc123XYZ")).toBe(
       "https://www.youtube.com/embed/abc123XYZ",
@@ -47,8 +52,9 @@ describe("renderLandingPage", () => {
     expect(html).toContain("Riyadh Apartment 1");
     // Shared guide media is primary for the exterior/wayfinding imagery.
     expect(html).toContain(guide.media.wayfindingImageUrl);
-    // Video falls back to the per-apartment video_url when the guide has none.
-    expect(html).toContain("https://www.youtube.com/embed/abc123XYZ");
+    // The shared guide check-in video embeds (Shorts URL -> iframe embed).
+    expect(html).toContain("https://www.youtube.com/embed/p30BRswZqb0");
+    expect(html).toContain("<iframe");
     expect(html).toContain("رمز الباب 1234");
     expect(html).toContain("tel:966500000000");
   });

@@ -28,7 +28,7 @@ export function escapeHtml(s: string): string {
 export function toEmbedUrl(url: string): string | null {
   if (!url) return null;
   const yt = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/,
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/,
   );
   if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
   const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
@@ -228,8 +228,9 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   // ---- Section 4: Check-in video ----
   const embed = videoUrl ? toEmbedUrl(videoUrl) : null;
   let videoBody: string;
+  const isVertical = /youtube\.com\/shorts\//i.test(videoUrl);
   if (embed) {
-    videoBody = `<div class="video"><iframe src="${embed}" title="${escapeHtml(t.videoTitle)}" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    videoBody = `<div class="video${isVertical ? " vertical" : ""}"><iframe src="${embed}" title="${escapeHtml(t.videoTitle)}" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
   } else if (videoUrl && /\.mp4(\?|$)/i.test(videoUrl)) {
     videoBody = `<video class="video-el" controls preload="metadata" playsinline ${guide.media.videoPoster ? `poster="${escapeHtml(guide.media.videoPoster)}"` : ""}><source src="${escapeHtml(videoUrl)}" type="video/mp4"></video>`;
   } else if (videoUrl) {
@@ -447,6 +448,7 @@ ${FONT_CSS}
 
   /* Video */
   .video{position:relative;padding-top:56.25%;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh)}
+  .video.vertical{max-width:340px;margin-inline:auto;padding-top:min(177.78%,604px)}
   .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .video-el{width:100%;border-radius:var(--r-lg);box-shadow:var(--sh);display:block;background:#000}
 
