@@ -15,17 +15,17 @@ type TemplateKey = `${MessageType}_${Language}`;
 
 export const MESSAGE_TEMPLATES: Record<TemplateKey, string> = {
   access_ar:
-    "أهلا {{guest_name}}، تم تأكيد حجزك في {{apartment_name}}.\n\nتاريخ الدخول: {{check_in_date}}\nوقت الدخول: {{check_in_time}}\n\nإرشادات الدخول:\n{{access_guideline}}\n\nدليل الدخول والمبنى (صورة المدخل وفيديو الشرح):\n{{landing_url}}",
+    "أهلاً وسهلاً {{guest_name}} 🌟\nتم تأكيد حجزك في {{apartment_name}}، ويسعدنا استضافتك.\n\n📅 تاريخ الدخول: {{check_in_date}}\n🕒 وقت الدخول: {{check_in_time}}\n\n🔑 طريقة الدخول:\n{{access_guideline}}\n\n📲 دليل الدخول والمبنى (صورة المدخل وفيديو الشرح وكل التفاصيل):\n{{landing_url}}\n\nنتمنى لك إقامة سعيدة، وإذا احتجت أي شيء فنحن في خدمتك. 🌿",
   checkout_ar:
-    "أهلا {{guest_name}}، تذكير بسيط بأن موعد الخروج من {{apartment_name}} هو {{check_out_date}} الساعة {{check_out_time}}.\n\nإرشادات الخروج:\n{{checkout_guideline}}\n\nشكرا لاختيارك الإقامة معنا.",
+    "{{guest_name}}، نتمنى أن إقامتك في {{apartment_name}} كانت ممتعة 🌿\n\nتذكير ودّي بأن موعد تسجيل الخروج هو {{check_out_date}} الساعة {{check_out_time}}.\n\n✅ قبل المغادرة:\n{{checkout_guideline}}\n\nشكراً لاختيارك الإقامة معنا، ونسعد بعودتك دائماً. 🤍",
   review_ar:
-    "أهلا {{guest_name}}، سعدنا باستضافتك في {{apartment_name}}.\n\nإذا كانت تجربتك جيدة، نقدر تكتب لنا تقييمك في Airbnb:\n{{airbnb_review_url}}\n\nشكرا لك.",
+    "{{guest_name}}، سعدنا كثيراً باستضافتك في {{apartment_name}} 🌟\n\nإذا كانت تجربتك جميلة، يشرّفنا تقييمك على Airbnb — رأيك يهمنا ويساعد ضيوفنا القادمين:\n{{airbnb_review_url}}\n\nشكراً لك، ونتمنى لك يوماً سعيداً. 🤍",
   access_en:
-    "Hello {{guest_name}}, your reservation at {{apartment_name}} is confirmed.\n\nCheck-in date: {{check_in_date}}\nCheck-in time: {{check_in_time}}\n\nAccess instructions:\n{{access_guideline}}\n\nBuilding & access guide (entrance photo + how-to-enter video):\n{{landing_url}}",
+    "Welcome {{guest_name}}! 🌟\nYour reservation at {{apartment_name}} is confirmed and we're delighted to host you.\n\n📅 Check-in date: {{check_in_date}}\n🕒 Check-in time: {{check_in_time}}\n\n🔑 How to enter:\n{{access_guideline}}\n\n📲 Building & access guide (entrance photo, how-to-enter video & full details):\n{{landing_url}}\n\nEnjoy your stay — we're here if you need anything. 🌿",
   checkout_en:
-    "Hello {{guest_name}}, this is a quick reminder that checkout from {{apartment_name}} is on {{check_out_date}} at {{check_out_time}}.\n\nCheckout instructions:\n{{checkout_guideline}}\n\nThank you for staying with us.",
+    "{{guest_name}}, we hope you enjoyed your stay at {{apartment_name}} 🌿\n\nA friendly reminder that checkout is on {{check_out_date}} at {{check_out_time}}.\n\n✅ Before you leave:\n{{checkout_guideline}}\n\nThank you for staying with us — you're always welcome back. 🤍",
   review_en:
-    "Hello {{guest_name}}, we were happy to host you at {{apartment_name}}.\n\nIf you enjoyed your stay, we would appreciate your Airbnb review:\n{{airbnb_review_url}}\n\nThank you.",
+    "{{guest_name}}, it was a pleasure hosting you at {{apartment_name}} 🌟\n\nIf you enjoyed your stay, we'd be grateful for your Airbnb review — it really helps:\n{{airbnb_review_url}}\n\nThank you, and have a wonderful day. 🤍",
 };
 
 /** Build the public landing-page URL for an apartment. */

@@ -52,7 +52,8 @@ describe("renderText", () => {
   it("supports English templates", () => {
     const en = { ...reservation, guest_language: "en" as const };
     const text = renderText("access", en, apartment);
-    expect(text).toContain("your reservation at");
+    expect(text).toContain("Welcome");
+    expect(text).toContain("reservation at");
   });
 });
 

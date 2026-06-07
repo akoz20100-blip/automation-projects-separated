@@ -1,5 +1,6 @@
 /** App bootstrap: mounts routes, auth, and error handling. */
 
+import "dotenv/config";
 import express, { type Request } from "express";
 import { env } from "./config/env.js";
 import { requireAuth } from "./middleware/auth.js";
