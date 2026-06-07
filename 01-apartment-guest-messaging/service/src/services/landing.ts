@@ -46,7 +46,7 @@ function bi(ar: string, en: string): string {
 const COPY = {
   ar: {
     dir: "rtl",
-    cta: "ابدأ تعليمات الدخول",
+    cta: "شاهد فيديو الدخول",
     selector: "اختر شقتك",
     checkinTitle: "تعليمات الدخول",
     howToEnter: "طريقة الدخول للشقة",
@@ -77,7 +77,7 @@ const COPY = {
   },
   en: {
     dir: "ltr",
-    cta: "Start Check-in",
+    cta: "Watch the check-in video",
     selector: "Choose your apartment",
     checkinTitle: "Check-in Instructions",
     howToEnter: "How to enter",
@@ -168,7 +168,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
       <span class="eyebrow up" style="--d:.15s">${escapeHtml(t.eyebrow)}</span>
       <h1 class="up" style="--d:.25s">${escapeHtml(pick(lang, guide.brand.welcomeAr, guide.brand.welcomeEn))}</h1>
       <p class="up" style="--d:.38s">${escapeHtml(pick(lang, guide.brand.subtitleAr, guide.brand.subtitleEn))}</p>
-      <a class="btn up" style="--d:.5s" href="#checkin">${escapeHtml(t.cta)} ${icon("chevron", "btn-ic")}</a>
+      <a class="btn up" style="--d:.5s" href="#video">${escapeHtml(t.cta)} ${icon("chevron", "btn-ic")}</a>
     </div>
   </header>`;
 
@@ -217,7 +217,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     videoBody = `<div class="video-ph ph">${icon("play", "ph-ic")}<span>${escapeHtml(t.videoFallback)}</span></div>`;
   }
   const video = `
-  <section class="wrap reveal">
+  <section id="video" class="wrap reveal">
     <h2 class="sec-title">${icon("play", "sec-ic")} ${bi(COPY.ar.videoTitle, COPY.en.videoTitle)}</h2>
     <p class="sec-desc">${escapeHtml(pick(lang, COPY.ar.videoDesc, COPY.en.videoDesc))}</p>
     ${videoBody}
@@ -478,15 +478,15 @@ ${FONT_CSS}
 <body>
 ${hero}
 <main>
+${video}
 ${selector}
 ${checkin}
-${video}
 ${info}
 ${rules}
 ${nearby}
 ${help}
 </main>
-<div class="fab"><a class="btn" href="#checkin">${escapeHtml(t.cta)}</a></div>
+<div class="fab"><a class="btn" href="#video">${escapeHtml(t.cta)}</a></div>
 <footer>${escapeHtml(brandName)} · ${escapeHtml(apartment.apartment_name)}</footer>
 <script>
 (function(){
