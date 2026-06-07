@@ -518,8 +518,8 @@ ${FONT_CSS}
 ${hero}
 <main>
 ${video}
-${selector}
 ${checkin}
+${selector}
 ${info}
 ${rules}
 ${nearby}
