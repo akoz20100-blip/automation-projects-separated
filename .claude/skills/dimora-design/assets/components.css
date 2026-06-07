@@ -1,0 +1,77 @@
+/* Dimora components — reusable, framework-free. Requires tokens.css + fonts.css.
+ * RTL-ready (uses logical properties). Mobile-first. */
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--body);line-height:1.6;font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img{max-width:100%;display:block}
+.wrap{max-width:680px;margin:0 auto;padding:34px 20px}
+
+/* Typography */
+h1,h2,.serif{font-family:var(--serif);color:var(--ink);letter-spacing:-.02em;font-weight:700}
+h1{font-size:clamp(2.3rem,8.4vw,3.3rem);line-height:1.08;margin:0 0 12px}
+.lede{font-size:1.12rem;color:var(--muted);margin:0 auto 24px;max-width:34ch}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  background:linear-gradient(135deg,#FF7A4D,var(--accent));color:#fff;text-decoration:none;
+  font-weight:700;font-size:1rem;padding:15px 26px;border-radius:999px;border:0;cursor:pointer;
+  box-shadow:0 10px 24px var(--accent-ring),inset 0 1px 0 rgba(255,255,255,.4);
+  transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.btn .ic{width:18px;height:18px}
+html[dir=rtl] .btn .ic{transform:scaleX(-1)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--sh-sm)}
+.btn.ghost:hover{background:#fafafa;filter:none}
+
+/* Eyebrow pill */
+.eyebrow{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  color:var(--accent);background:var(--accent-soft);padding:7px 15px;border-radius:999px}
+
+/* Section head: coral icon chip + serif title + muted sub */
+.sec-head{display:flex;align-items:flex-start;gap:13px;margin:0 0 16px}
+.chip{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.chip.sm{width:34px;height:34px;border-radius:10px}
+.chip .ic{width:22px;height:22px}
+.sec-title{font-family:var(--serif);font-size:clamp(1.5rem,5.4vw,1.92rem);font-weight:700;color:var(--ink);letter-spacing:-.02em;line-height:1.14;margin:0}
+.sec-sub{display:block;color:var(--muted);font-size:.92rem;margin-top:3px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:14px 0;box-shadow:var(--sh)}
+.card h3{margin:0 0 8px;color:var(--ink);font-family:var(--serif);font-size:1.12rem;font-weight:700}
+
+/* Colourful gradient pad + browser mock window (frame screenshots/photos) */
+.pad{padding:16px;border-radius:var(--r-xl);position:relative;isolation:isolate;background:var(--art-hero)}
+.mock{border-radius:var(--r-lg);overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.7);box-shadow:var(--sh-lg)}
+.mock-bar{display:flex;align-items:center;gap:7px;padding:11px 15px;background:#fbfbfd;border-bottom:1px solid var(--line)}
+.dot{width:11px;height:11px;border-radius:50%;flex:none}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.mock-title{margin-inline-start:9px;font-size:.76rem;color:var(--muted)}
+.mock img{width:100%}
+
+/* Pill segmented toggle */
+.seg-wrap{display:inline-flex;gap:4px;background:#e9e9ed;padding:5px;border-radius:999px;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.seg{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:.94rem;padding:9px 28px;border-radius:999px;cursor:pointer;transition:.25s var(--ease)}
+.seg.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+
+/* Big-number highlights strip */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.stat{padding:20px 12px;text-align:center;border-inline-end:1px solid var(--line)}
+.stat:last-child{border-inline-end:0}
+.stat b{font-family:var(--serif);font-size:1.75rem;color:var(--ink);display:block;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.8rem;display:block;margin-top:2px}
+
+/* Colourful gradient icon tiles (cycle art1..4 with :nth-child on the grid) */
+.tile-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.5),0 6px 16px rgba(17,20,24,.12)}
+.tile-ic .ic{width:22px;height:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+.tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile-grid > *:nth-child(4n+1) .tile-ic{background:var(--art1)}
+.tile-grid > *:nth-child(4n+2) .tile-ic{background:var(--art2)}
+.tile-grid > *:nth-child(4n+3) .tile-ic{background:var(--art3)}
+.tile-grid > *:nth-child(4n)   .tile-ic{background:var(--art4)}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--sh);display:flex;align-items:center;gap:13px}
+
+/* Reduced motion */
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn:hover{transform:none}}
