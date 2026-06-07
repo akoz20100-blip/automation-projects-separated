@@ -17,13 +17,13 @@ import type { Channel, MessageType, NotifyType, PreparedMessage } from "../types
 
 const notifySchema = z.object({
   reservation_id: z.string().min(1),
-  notify_type: z.enum(["owner_new", "owner_checkout", "owner_check", "cleaner_checkout"]),
+  notify_type: z.enum(["owner_new", "owner_checkout", "owner_check", "cleaner_checkout", "cleaner_check"]),
   force: z.boolean().default(false),
 });
 
 /** Recipient phone for a notification type (owner vs cleaner). */
 function notifyRecipient(type: NotifyType): { phone: string; who: string } {
-  if (type === "cleaner_checkout") return { phone: env.cleaner.phone, who: "cleaner" };
+  if (type.startsWith("cleaner")) return { phone: env.cleaner.phone, who: "cleaner" };
   return { phone: env.owner.phone, who: "owner" };
 }
 

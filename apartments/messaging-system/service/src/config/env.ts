@@ -72,6 +72,7 @@ export interface Env {
   cleaner: {
     notifyEnabled: boolean;
     phone: string;
+    name: string;
   };
 }
 
@@ -135,6 +136,7 @@ export function loadEnv(): Env {
     cleaner: {
       notifyEnabled: bool("CLEANER_NOTIFY_ENABLED", false),
       phone: str("CLEANER_PHONE"),
+      name: str("CLEANER_NAME", "Sara"),
     },
   };
 }

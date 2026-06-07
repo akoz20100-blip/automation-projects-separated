@@ -24,8 +24,11 @@ export const NOTIFY_TEMPLATES: Record<NotifyType, string> = {
     "🔔 تذكير خروج بكرة\nالعميل {{guest_name}} يطلع من {{apartment_name}} بتاريخ {{check_out_date}} الساعة {{check_out_time}}.\nتابع جدول النظافة 🧹",
   owner_check:
     "❓ متابعة خروج\nهل طلع {{guest_name}} من {{apartment_name}}؟\n(موعد الخروج كان اليوم الساعة {{check_out_time}})\nرد: طلع ✅ / مدّد ⏰",
+  // Cleaner messages — English, simple and human (recipient: Sara).
   cleaner_checkout:
-    "🧹 تنظيف بكرة\nشقة {{apartment_name}} بتكون فاضية بعد خروج الضيف بتاريخ {{check_out_date}} الساعة {{check_out_time}}.\nنحتاج تجهيزها للضيف الجاي. شكراً 🤍",
+    "Hi {{cleaner_name}} 🙂\nJust a heads-up — we have a guest checking out tomorrow from {{apartment_name}} at {{check_out_time}}.\nCould you clean and get it ready after they leave? Thank you! 🌸",
+  cleaner_check:
+    "Hi {{cleaner_name}} 🙂\nHas the guest checked out of {{apartment_name}} yet? Checkout was at {{check_out_time}}.\nIf they've left, you're good to start cleaning. Just let me know 🙏",
 };
 
 type TemplateKey = `${MessageType}_${Language}`;
@@ -87,6 +90,7 @@ export function templateVars(
     guest_phone: reservation.guest_phone,
     door_code: doorCode,
     door_block: doorBlock,
+    cleaner_name: env.cleaner.name,
   };
 }
 

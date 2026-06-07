@@ -49,10 +49,17 @@ describe("renderNotify", () => {
     expect(t).toContain("مدّد");
   });
 
-  it("cleaner_checkout mentions the apartment and checkout date", () => {
+  it("cleaner_checkout is a simple English note to Sara with the apartment + time", () => {
     const t = renderNotify("cleaner_checkout", reservation, apartment);
-    expect(t).toContain("تنظيف");
+    expect(t).toContain("Sara");
+    expect(t).toContain("checking out tomorrow");
     expect(t).toContain("شقة الرياض 1");
-    expect(t).toContain("2026-06-13");
+    expect(t).toContain("12:00");
+  });
+
+  it("cleaner_check asks Sara whether the guest has left", () => {
+    const t = renderNotify("cleaner_check", reservation, apartment);
+    expect(t).toContain("Sara");
+    expect(t).toContain("checked out");
   });
 });

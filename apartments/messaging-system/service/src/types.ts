@@ -3,7 +3,7 @@
 export type MessageType = "access" | "checkout" | "review";
 
 /** Internal notifications to the owner / cleaner (not the guest). */
-export type NotifyType = "owner_new" | "owner_checkout" | "owner_check" | "cleaner_checkout";
+export type NotifyType = "owner_new" | "owner_checkout" | "owner_check" | "cleaner_checkout" | "cleaner_check";
 export type Language = "ar" | "en";
 export type Channel = "whatsapp_cloud_api" | "whatsapp_link" | "whatsapp_wasender";
 
