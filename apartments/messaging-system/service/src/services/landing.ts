@@ -182,7 +182,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     ? `<img class="logo" src="${escapeHtml(guide.brand.logoUrl)}" alt="${escapeHtml(brandName)}">`
     : `<span class="wordmark">${escapeHtml(guide.brand.nameEn)}</span>`;
   const hero = `
-  <header class="hero" ${heroImg ? `style="background-image:linear-gradient(180deg,rgba(28,34,28,.18) 0%,rgba(28,34,28,.30) 45%,rgba(24,30,24,.78) 100%),url('${escapeHtml(heroImg)}')"` : ""}>
+  <header class="hero" ${heroImg ? `style="background-image:linear-gradient(180deg,rgba(22,28,22,.66) 0%,rgba(24,30,24,.46) 40%,rgba(22,28,22,.84) 100%),url('${escapeHtml(heroImg)}')"` : ""}>
     <div class="grain"></div>
     <div class="hero-top up" style="--d:.05s">${logo}<span class="kicker">${escapeHtml(pick(lang, guide.brand.headerAr, guide.brand.headerEn))}</span></div>
     <div class="hero-mid">
@@ -374,7 +374,7 @@ ${FONT_CSS}
     background:#33433a center/cover no-repeat}
   .hero>*{position:relative;z-index:1}
   .hero-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:8px}
-  .hero .logo{max-height:148px;width:auto;max-width:78%;filter:drop-shadow(0 6px 22px rgba(0,0,0,.32))}
+  .hero .logo{max-height:190px;width:auto;max-width:84%;filter:drop-shadow(0 8px 26px rgba(0,0,0,.55))}
   .wordmark{font-family:var(--serif);font-size:1.4rem;font-weight:600;letter-spacing:.42em;padding-inline-start:4px}
   .kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;opacity:.95;
     background:rgba(255,255,255,.14);padding:6px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.22)}
