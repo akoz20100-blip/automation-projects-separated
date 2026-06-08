@@ -9,7 +9,10 @@ export type WhatsAppMode = "cloud_api" | "manual_link" | "wasender";
 
 function str(name: string, fallback = ""): string {
   const v = process.env[name];
-  return v === undefined || v === "" ? fallback : v;
+  // Trim accidental surrounding whitespace/newlines that creep in when values
+  // are copy-pasted into a hosting dashboard (e.g. a trailing newline on a
+  // Sheets ID or secret breaks the request).
+  return v === undefined || v.trim() === "" ? fallback : v.trim();
 }
 
 function bool(name: string, fallback = false): boolean {
