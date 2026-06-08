@@ -40,6 +40,23 @@ export function normalizePhone(raw: string | null | undefined): string | null {
   return digits;
 }
 
+/**
+ * The last `n` digits of a phone number, used to derive a guest's smart-lock
+ * passcode (e.g. 966502305331 -> "5331"). Arabic-Indic digits are mapped first.
+ * Returns null when there aren't at least `n` digits.
+ */
+export function lastDigits(raw: string | null | undefined, n = 4): string | null {
+  if (!raw) return null;
+  const latin = raw.replace(/[٠-٩۰-۹]/g, (d) => {
+    const code = d.charCodeAt(0);
+    const base = code >= 0x06f0 ? 0x06f0 : 0x0660;
+    return String(code - base);
+  });
+  const digits = latin.replace(/\D/g, "");
+  if (digits.length < n) return null;
+  return digits.slice(-n);
+}
+
 /** True when the value is already a valid digits-only international number. */
 export function isValidPhone(raw: string | null | undefined): boolean {
   if (!raw) return false;

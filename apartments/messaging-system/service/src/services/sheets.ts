@@ -77,6 +77,9 @@ function toReservation(o: Record<string, string>): Reservation {
     ocr_needs_review: String(o.ocr_needs_review).toLowerCase() === "true",
     guest_phone_confidence: o.guest_phone_confidence ?? "",
     airbnb_review_url: o.airbnb_review_url ?? "",
+    // Read back the smart-lock code so a passcode issued at intake survives the
+    // sheet round-trip and is rendered in the guest's access message.
+    door_code: o.door_code ?? "",
   };
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizePhone, isValidPhone, requireValidPhone } from "../src/domain/phone.js";
+import { normalizePhone, isValidPhone, requireValidPhone, lastDigits } from "../src/domain/phone.js";
 
 describe("normalizePhone", () => {
   it("keeps a clean international number", () => {
@@ -46,5 +46,23 @@ describe("requireValidPhone", () => {
   });
   it("throws on invalid", () => {
     expect(() => requireValidPhone("abc")).toThrow();
+  });
+});
+
+describe("lastDigits", () => {
+  it("returns the last 4 digits for a smart-lock passcode", () => {
+    expect(lastDigits("966502305331")).toBe("5331");
+    expect(lastDigits("+966 50-230-5331")).toBe("5331");
+  });
+  it("maps Arabic-Indic digits", () => {
+    expect(lastDigits("٩٦٦٥٠٢٣٠٥٣٣١")).toBe("5331");
+  });
+  it("preserves leading zeros within the slice", () => {
+    expect(lastDigits("96650230" + "0042")).toBe("0042");
+  });
+  it("returns null when there aren't enough digits", () => {
+    expect(lastDigits("12")).toBeNull();
+    expect(lastDigits("")).toBeNull();
+    expect(lastDigits(null)).toBeNull();
   });
 });

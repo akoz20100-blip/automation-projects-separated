@@ -10,6 +10,8 @@ Automatic guest messaging for Airbnb apartments:
   (`WHATSAPP_MODE=manual_link`) until your templates are approved.
 - **Landing page** — a lightweight, brand-themeable per-apartment guide page
   (entrance photo + how-to-enter video + building info) linked from the messages.
+- **Smart locks (TTLock)** — on each new booking, issue a time-limited keyboard
+  passcode (the guest's last-4 phone digits) valid check-in 16:00 → checkout 12:00.
 - **Google Sheets** — Reservations / Apartments / MessageLog as the data store.
 
 ## Endpoints
@@ -24,6 +26,8 @@ Automatic guest messaging for Airbnb apartments:
 | GET | `/api/messages/due?type=checkout\|review` | Bearer | list reservations due today |
 | GET | `/api/landing/:apartment_id?lang=ar\|en` | public | guest guide page |
 | GET/POST | `/api/webhooks/whatsapp` | Meta sig | verification + delivery status |
+| POST | `/api/telegram/webhook` | secret token | intake bot (screenshot → reservation → passcode) |
+| GET | `/api/ttlock/locks` | Bearer | list TTLock locks (to fill `TTLOCK_LOCKS`) |
 
 ## Run locally
 
@@ -59,6 +63,35 @@ curl -s localhost:3000/api/reservations/prepare-messages \
 All variables are documented in `.env.example`. The OCR provider is configured
 with `OCR_API_BASE_URL`, `OCR_API_KEY`, `OCR_MODEL` — point them at your existing
 model aggregator and pick the cheapest accurate Arabic+English vision model.
+
+## Smart locks (TTLock)
+
+When the four TTLock credentials are set, the Telegram intake bot issues a
+per-guest keyboard passcode the moment a booking is registered:
+
+- **Code** = the last 4 digits of the guest's phone (`966502305331` → `5331`).
+- **Window** = check-in `16:00` → checkout `12:00` in `DEFAULT_TIMEZONE`
+  (uses the reservation's own times when present, else `TTLOCK_CHECKIN_TIME` /
+  `TTLOCK_CHECKOUT_TIME`). The code auto-expires at checkout.
+- The issued code is saved on the reservation (`door_code`) and rendered in the
+  guest's WhatsApp access message + on the landing page.
+
+Setup:
+
+1. Create an app on the TTLock Open Platform (EU console: `euopen.ttlock.com`)
+   and copy `client_id` / `client_secret` into `TTLOCK_CLIENT_ID` /
+   `TTLOCK_CLIENT_SECRET`.
+2. Set `TTLOCK_USERNAME` / `TTLOCK_PASSWORD` to the TTLock **app account** that
+   owns the locks.
+3. Call `GET /api/ttlock/locks` once to read each `lockId`, then map them with
+   `TTLOCK_LOCKS=apt_01:1234567,apt_02:7654321`.
+
+> **Gateway requirement.** Writing a *custom* code (the last-4-of-phone) remotely
+> uses `keyboardPwd/add` with `addType=2`, which needs the lock to be reachable
+> from the cloud — i.e. paired with a TTLock WiFi **gateway** (G2/G3) or a WiFi
+> lock. Without a gateway the cloud cannot push a custom code; set
+> `TTLOCK_FALLBACK_TO_GENERATED=true` to instead issue a gateway-free,
+> system-generated period code (works offline, but it is **not** the last-4 code).
 
 ## Deploy
 

@@ -21,6 +21,16 @@ function bool(name: string, fallback = false): boolean {
   return ["1", "true", "yes", "on"].includes(v.toLowerCase());
 }
 
+/** Parse "apt_01:1234567,apt_02:7654321" -> { apt_01: "1234567", apt_02: "7654321" }. */
+function parseLockMap(raw: string): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const pair of raw.split(",")) {
+    const [key, value] = pair.split(":").map((s) => s.trim());
+    if (key && value) map[key.toLowerCase()] = value;
+  }
+  return map;
+}
+
 export interface Env {
   appEnv: string;
   port: number;
@@ -89,6 +99,25 @@ export interface Env {
     allowedChatIds: string[];
     /** Apartment used when the screenshot caption doesn't specify D1/D2. */
     defaultApartmentId: string;
+  };
+
+  ttlock: {
+    /** EU console (euopen.ttlock.com) -> https://euapi.ttlock.com ; global -> https://api.ttlock.com */
+    baseUrl: string;
+    clientId: string;
+    clientSecret: string;
+    username: string;
+    /** Plain account password; MD5-hashed by the client before the OAuth call. */
+    password: string;
+    /** apartment_id -> TTLock lockId (from TTLOCK_LOCKS). */
+    locks: Record<string, string>;
+    /** Passcode validity window (local timezone). Defaults: check-in 16:00 -> checkout 12:00. */
+    checkInTime: string;
+    checkOutTime: string;
+    /** addType for keyboardPwd/add: 2 = via WiFi gateway (remote, required for custom codes). */
+    addType: number;
+    /** If the custom (last-4-of-phone) add fails, fall back to a system-generated period code. */
+    fallbackToGenerated: boolean;
   };
 }
 
@@ -167,6 +196,19 @@ export function loadEnv(): Env {
         .map((s) => s.trim())
         .filter(Boolean),
       defaultApartmentId: str("TELEGRAM_DEFAULT_APARTMENT_ID", "apt_01"),
+    },
+
+    ttlock: {
+      baseUrl: str("TTLOCK_API_BASE_URL", "https://euapi.ttlock.com").replace(/\/$/, ""),
+      clientId: str("TTLOCK_CLIENT_ID"),
+      clientSecret: str("TTLOCK_CLIENT_SECRET"),
+      username: str("TTLOCK_USERNAME"),
+      password: str("TTLOCK_PASSWORD"),
+      locks: parseLockMap(str("TTLOCK_LOCKS")),
+      checkInTime: str("TTLOCK_CHECKIN_TIME", "16:00"),
+      checkOutTime: str("TTLOCK_CHECKOUT_TIME", "12:00"),
+      addType: Number(str("TTLOCK_ADD_TYPE", "2")) || 2,
+      fallbackToGenerated: bool("TTLOCK_FALLBACK_TO_GENERATED", false),
     },
   };
 }
