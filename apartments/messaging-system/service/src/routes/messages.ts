@@ -8,6 +8,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { sendMessageSchema } from "../domain/reservation.js";
 import { getApartment, getReservation, listDueReservations, appendMessageLog } from "../services/sheets.js";
+import { defaultApartment } from "../services/landing.js";
 import { checkAlreadySent } from "../services/idempotency.js";
 import { sendMessage, sendText } from "../services/whatsapp.js";
 import { renderNotify } from "../services/templates.js";
@@ -53,8 +54,10 @@ export async function sendForReservation(
     throw new Error("check_out_date must be after check_in_date");
   }
 
-  const apartment = await getApartment(apartmentIdHint || reservation.apartment_id);
-  if (!apartment) throw new Error(`apartment not found: ${reservation.apartment_id}`);
+  const apartmentId = apartmentIdHint || reservation.apartment_id;
+  // Fall back to built-in Dimora defaults when the Apartments sheet has no row,
+  // so sending works before the sheet is fully populated.
+  const apartment = (await getApartment(apartmentId)) ?? defaultApartment(apartmentId);
 
   if (!force) {
     const dup = await checkAlreadySent(reservationId, messageType);
@@ -132,8 +135,8 @@ export async function sendNotifyForReservation(
 
   const reservation = await getReservation(reservationId);
   if (!reservation) throw new Error(`reservation not found: ${reservationId}`);
-  const apartment = await getApartment(reservation.apartment_id);
-  if (!apartment) throw new Error(`apartment not found: ${reservation.apartment_id}`);
+  const apartment =
+    (await getApartment(reservation.apartment_id)) ?? defaultApartment(reservation.apartment_id);
 
   if (!force) {
     const dup = await checkAlreadySent(reservationId, notifyType);

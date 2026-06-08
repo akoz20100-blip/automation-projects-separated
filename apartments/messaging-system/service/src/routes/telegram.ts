@@ -16,7 +16,7 @@ import { extractFromImages } from "../services/ocr.js";
 import { appendReservation } from "../services/sheets.js";
 import { tgSendMessage, downloadTelegramPhoto } from "../services/telegram.js";
 import { guide, resolveCode } from "../data/guestGuide.js";
-import { buildWaLink } from "../services/whatsapp.js";
+import { sendForReservation } from "./messages.js";
 import type { Language, Reservation } from "../types.js";
 
 export const telegramRouter = Router();
@@ -167,12 +167,27 @@ telegramRouter.post("/webhook", async (req: Request, res: Response) => {
     lines.push(`📅 ${reservation.check_in_date || "—"} ← ${reservation.check_out_date || "—"}`);
     if (ocr.warnings.length) lines.push("\n⚠️ " + ocr.warnings.join("\n⚠️ "));
     lines.push(`\n🔗 صفحة الضيف:\n${landing}`);
+
+    // Send (or prepare) the welcome/access message to the guest via the active
+    // channel. In wasender mode this sends on WhatsApp directly; in manual_link
+    // mode it returns a ready-to-tap wa.me link.
     if (reservation.guest_phone) {
-      const wa = buildWaLink(
-        reservation.guest_phone,
-        `أهلاً ${reservation.guest_name || ""} 👋\nرابط دليل دخولك إلى ديمورا:\n${landing}`,
-      );
-      lines.push(`\n📲 رابط واتساب جاهز للضيف:\n${wa}`);
+      try {
+        const out = await sendForReservation(reservation.reservation_id, "access", apartmentId, false);
+        if (out.status === "accepted") {
+          lines.push("\n📲 أُرسلت رسالة الترحيب للضيف على واتساب ✅");
+        } else if (out.status === "already_sent") {
+          lines.push("\n📲 رسالة الترحيب مُرسلة مسبقاً لهذا الحجز.");
+        } else if (out.whatsapp_link) {
+          lines.push(`\n📲 رابط واتساب جاهز للضيف (اضغط لإرساله):\n${out.whatsapp_link}`);
+        } else {
+          lines.push(`\n📲 حالة الإرسال: ${out.status}`);
+        }
+      } catch (e) {
+        lines.push("\n📲 تعذّر تجهيز رسالة الضيف: " + (e as Error).message);
+      }
+    } else {
+      lines.push("\n📲 ما فيه رقم جوال واضح — أضف الرقم يدوياً للإرسال.");
     }
     await tgSendMessage(chatId, lines.join("\n"));
   } catch (e) {
