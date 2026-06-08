@@ -24,7 +24,7 @@
 import { createHash } from "node:crypto";
 import { env } from "../config/env.js";
 import { epochMsInTz } from "../domain/dates.js";
-import { normalizePhone, lastDigits } from "../domain/phone.js";
+import { normalizePhone, passcodeCandidates } from "../domain/phone.js";
 import type { Reservation } from "../types.js";
 
 export interface TtlockLock {
@@ -203,19 +203,30 @@ export async function issueGuestPasscode(reservation: Reservation): Promise<Issu
   if (!lockId) return null;
 
   const phone = normalizePhone(reservation.guest_phone) ?? reservation.guest_phone;
-  const passcode = lastDigits(phone, 4);
-  if (!passcode) throw new Error("guest phone has fewer than 4 digits — cannot derive a passcode");
+  const candidates = passcodeCandidates(phone, 4);
+  if (!candidates.length) throw new Error("guest phone has fewer than 4 digits — cannot derive a passcode");
 
   const { startMs, endMs } = passcodeWindow(reservation);
   if (!(endMs > startMs)) throw new Error("checkout must be after check-in for the passcode window");
 
   const name = `Dimora ${reservation.guest_name || reservation.reservation_id}`.slice(0, 40);
 
-  try {
-    const keyboardPwdId = await addCustomPasscode(lockId, passcode, name, startMs, endMs);
-    return { passcode, keyboardPwdId, lockId, mode: "custom", startMs, endMs };
-  } catch (e) {
-    if (!env.ttlock.fallbackToGenerated) throw e;
+  // Try phone-derived codes in order. TTLock rejects "too simple" codes (-2032);
+  // when that happens we move to the next candidate. Any other error (e.g. -2012
+  // "not connected to a gateway") is terminal — retrying other codes won't help.
+  let lastError: unknown;
+  for (const passcode of candidates) {
+    try {
+      const keyboardPwdId = await addCustomPasscode(lockId, passcode, name, startMs, endMs);
+      return { passcode, keyboardPwdId, lockId, mode: "custom", startMs, endMs };
+    } catch (e) {
+      lastError = e;
+      if (/error -2032\b/.test((e as Error).message)) continue; // too simple -> next candidate
+      break;
+    }
+  }
+
+  if (env.ttlock.fallbackToGenerated) {
     const gen = await generatePeriodPasscode(lockId, name, startMs, endMs);
     return {
       passcode: gen.keyboardPwd,
@@ -226,4 +237,5 @@ export async function issueGuestPasscode(reservation: Reservation): Promise<Issu
       endMs,
     };
   }
+  throw lastError;
 }

@@ -40,6 +40,16 @@ export function normalizePhone(raw: string | null | undefined): string | null {
   return digits;
 }
 
+/** Map Arabic-Indic / Eastern Arabic-Indic digits to Latin, then strip non-digits. */
+function toLatinDigits(raw: string): string {
+  const latin = raw.replace(/[٠-٩۰-۹]/g, (d) => {
+    const code = d.charCodeAt(0);
+    const base = code >= 0x06f0 ? 0x06f0 : 0x0660;
+    return String(code - base);
+  });
+  return latin.replace(/\D/g, "");
+}
+
 /**
  * The last `n` digits of a phone number, used to derive a guest's smart-lock
  * passcode (e.g. 966502305331 -> "5331"). Arabic-Indic digits are mapped first.
@@ -47,14 +57,52 @@ export function normalizePhone(raw: string | null | undefined): string | null {
  */
 export function lastDigits(raw: string | null | undefined, n = 4): string | null {
   if (!raw) return null;
-  const latin = raw.replace(/[٠-٩۰-۹]/g, (d) => {
-    const code = d.charCodeAt(0);
-    const base = code >= 0x06f0 ? 0x06f0 : 0x0660;
-    return String(code - base);
-  });
-  const digits = latin.replace(/\D/g, "");
+  const digits = toLatinDigits(raw);
   if (digits.length < n) return null;
   return digits.slice(-n);
+}
+
+/**
+ * True for passcodes TTLock rejects as "too simple" (errcode -2032): all-same
+ * digits (1111) or a strictly consecutive run up/down (1234, 4321).
+ */
+export function isSimplePasscode(code: string): boolean {
+  if (!/^\d{2,}$/.test(code)) return false;
+  if (/^(\d)\1+$/.test(code)) return true; // all same
+  let asc = true;
+  let desc = true;
+  for (let i = 1; i < code.length; i++) {
+    const diff = code.charCodeAt(i) - code.charCodeAt(i - 1);
+    if (diff !== 1) asc = false;
+    if (diff !== -1) desc = false;
+  }
+  return asc || desc;
+}
+
+/**
+ * Ordered passcode candidates derived from the phone. The guest is always TOLD
+ * the actual code (it's in their WhatsApp message), so when the preferred last-4
+ * is one TTLock rejects as "too simple", we slide the 4-digit window left through
+ * the number and prefer the first non-simple window — staying phone-derived.
+ * Simple windows are kept only as a last resort. Empty when too few digits.
+ */
+export function passcodeCandidates(raw: string | null | undefined, n = 4): string[] {
+  if (!raw) return [];
+  const digits = toLatinDigits(raw);
+  if (digits.length < n) return [];
+
+  const seen = new Set<string>();
+  const windows: string[] = [];
+  for (let end = digits.length; end >= n; end--) {
+    const w = digits.slice(end - n, end); // last-n first, then slide left
+    if (!seen.has(w)) {
+      seen.add(w);
+      windows.push(w);
+    }
+  }
+  const nonSimple = windows.filter((c) => !isSimplePasscode(c));
+  const simple = windows.filter((c) => isSimplePasscode(c));
+  return [...nonSimple, ...simple];
 }
 
 /** True when the value is already a valid digits-only international number. */

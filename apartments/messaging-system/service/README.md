@@ -69,7 +69,9 @@ model aggregator and pick the cheapest accurate Arabic+English vision model.
 When the four TTLock credentials are set, the Telegram intake bot issues a
 per-guest keyboard passcode the moment a booking is registered:
 
-- **Code** = the last 4 digits of the guest's phone (`966502305331` → `5331`).
+- **Code** = the last 4 digits of the guest's phone (`966502305331` → `5331`). TTLock
+  rejects "too simple" codes (consecutive/repeated, errcode -2032); when the last-4
+  is one of those, the next 4-digit window of the phone is used instead.
 - **Window** = check-in `16:00` → checkout `12:00` in `DEFAULT_TIMEZONE`
   (uses the reservation's own times when present, else `TTLOCK_CHECKIN_TIME` /
   `TTLOCK_CHECKOUT_TIME`). The code auto-expires at checkout.
@@ -87,10 +89,11 @@ Setup:
    `TTLOCK_LOCKS=apt_01:1234567,apt_02:7654321`.
 
 > **Gateway requirement.** Writing a *custom* code (the last-4-of-phone) remotely
-> uses `keyboardPwd/add` with `addType=2`, which needs the lock to be reachable
-> from the cloud — i.e. paired with a TTLock WiFi **gateway** (G2/G3) or a WiFi
-> lock. Without a gateway the cloud cannot push a custom code; set
-> `TTLOCK_FALLBACK_TO_GENERATED=true` to instead issue a gateway-free,
+> uses `keyboardPwd/add` with `addType=2`, which needs the lock to be **online and
+> bound to a TTLock WiFi gateway** (G2/G3/G5) — confirm via `GET /api/ttlock/locks`
+> (each lock shows `hasGateway`). If a lock has no gateway, the API returns
+> errcode `-2012` ("not connected to a gateway") and no custom code can be pushed;
+> set `TTLOCK_FALLBACK_TO_GENERATED=true` to instead issue a gateway-free,
 > system-generated period code (works offline, but it is **not** the last-4 code).
 
 ## Deploy

@@ -97,6 +97,27 @@ describe("issueGuestPasscode", () => {
     expect(calls[0]!.url.startsWith("https://euapi.ttlock.com/")).toBe(true);
   });
 
+  it("skips a 'too simple' code (-2032) and uses the next phone-derived candidate", async () => {
+    setEnv();
+    const json = (o: unknown) => new Response(JSON.stringify(o), { status: 200 });
+    const fn = vi.fn(async (url: string, init?: { body?: string }) => {
+      const u = String(url);
+      if (u.endsWith("/oauth2/token")) return json({ access_token: "tok", expires_in: 7200 });
+      if (u.endsWith("/v3/keyboardPwd/add")) {
+        const p = new URLSearchParams(String(init?.body ?? ""));
+        if (p.get("keyboardPwd") === "5331") return json({ errcode: -2032, errmsg: "too simple" });
+        return json({ keyboardPwdId: 7, errcode: 0 });
+      }
+      return json({});
+    });
+    vi.stubGlobal("fetch", fn);
+    const { issueGuestPasscode } = await loadTtlock();
+
+    const issued = await issueGuestPasscode(baseReservation);
+    expect(issued?.mode).toBe("custom");
+    expect(issued?.passcode).toBe("0533"); // next 4-digit window after the rejected "5331"
+  });
+
   it("propagates a TTLock errcode (e.g. no gateway) when fallback is off", async () => {
     setEnv();
     mockFetch({
