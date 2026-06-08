@@ -81,6 +81,15 @@ export interface Env {
   cron: {
     secret: string;
   };
+
+  telegram: {
+    botToken: string;
+    webhookSecret: string;
+    /** Chat IDs allowed to use the intake bot. Empty -> allow anyone. */
+    allowedChatIds: string[];
+    /** Apartment used when the screenshot caption doesn't specify D1/D2. */
+    defaultApartmentId: string;
+  };
 }
 
 export function loadEnv(): Env {
@@ -148,6 +157,16 @@ export function loadEnv(): Env {
 
     cron: {
       secret: str("CRON_SECRET"),
+    },
+
+    telegram: {
+      botToken: str("TELEGRAM_BOT_TOKEN"),
+      webhookSecret: str("TELEGRAM_WEBHOOK_SECRET"),
+      allowedChatIds: str("TELEGRAM_ALLOWED_CHAT_IDS")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      defaultApartmentId: str("TELEGRAM_DEFAULT_APARTMENT_ID", "apt_01"),
     },
   };
 }

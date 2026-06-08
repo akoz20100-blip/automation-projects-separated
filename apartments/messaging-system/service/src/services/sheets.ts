@@ -162,3 +162,38 @@ export async function appendMessageLog(entry: MessageLogRow): Promise<void> {
     requestBody: { values: [order.map((k) => String(entry[k] ?? ""))] },
   });
 }
+
+/** Canonical Reservations column order (matches the sheet header row). */
+const RESERVATION_COLUMNS: (keyof Reservation)[] = [
+  "reservation_id",
+  "source",
+  "apartment_id",
+  "apartment_name",
+  "guest_name",
+  "guest_phone",
+  "guest_language",
+  "check_in_date",
+  "check_out_date",
+  "check_in_time",
+  "check_out_time",
+  "status",
+  "ocr_needs_review",
+  "guest_phone_confidence",
+  "airbnb_review_url",
+  "door_code",
+];
+
+/** Append a new reservation row (used by the OCR intake / Telegram bot). */
+export async function appendReservation(r: Reservation): Promise<void> {
+  const row = RESERVATION_COLUMNS.map((k) => {
+    const v = r[k];
+    if (typeof v === "boolean") return v ? "TRUE" : "FALSE";
+    return v == null ? "" : String(v);
+  });
+  await getClient().spreadsheets.values.append({
+    spreadsheetId: env.sheets.spreadsheetId,
+    range: RESERVATIONS,
+    valueInputOption: "RAW",
+    requestBody: { values: [row] },
+  });
+}

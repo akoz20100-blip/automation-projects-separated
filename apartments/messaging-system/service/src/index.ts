@@ -11,6 +11,7 @@ import { messagesRouter } from "./routes/messages.js";
 import { landingRouter } from "./routes/landing.js";
 import { webhooksRouter } from "./routes/webhooks.js";
 import { cronRouter } from "./routes/cron.js";
+import { telegramRouter } from "./routes/telegram.js";
 
 export function createApp() {
   const app = express();
@@ -32,6 +33,8 @@ export function createApp() {
   app.use("/api/webhooks", webhooksRouter);
   // Scheduled jobs — guarded internally by CRON_SECRET (Vercel Cron / external).
   app.use("/api/cron", cronRouter);
+  // Telegram intake bot — guarded internally by the webhook secret token.
+  app.use("/api/telegram", telegramRouter);
 
   // Authenticated API.
   app.use("/api/intake", requireAuth, intakeRouter);
