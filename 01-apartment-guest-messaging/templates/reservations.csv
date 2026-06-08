@@ -1,3 +1,0 @@
-reservation_id,source,apartment_id,apartment_name,guest_name,guest_phone,guest_language,check_in_date,check_out_date,check_in_time,check_out_time,total_amount,platform_fee,cleaning_fee,status,access_message_status,checkout_message_status,review_message_status,access_whatsapp_link,checkout_whatsapp_link,review_whatsapp_link,notes
-AIRBNB-2026-0001,airbnb,apt_01,Riyadh Apartment 1,Ahmed,9665XXXXXXXX,ar,2026-06-10,2026-06-13,15:00,12:00,1200,180,100,confirmed,pending,pending,pending,,,,"Sample reservation"
-

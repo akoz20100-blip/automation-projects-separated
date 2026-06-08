@@ -1,0 +1,42 @@
+/* Dimora design tokens — light, editorial, coral-accented.
+ * Source of truth for colour, type, radius, shadow, and the colourful gradient art.
+ * Pair with fonts.css (Thmanyah) and components.css. */
+:root {
+  /* Accent — the single bright pop. Override --accent to rebrand. */
+  --accent:#889970;
+  --accent-dk:#5F6B4E;
+  --accent-soft:color-mix(in srgb, var(--accent) 12%, #fff);
+  --accent-ring:color-mix(in srgb, var(--accent) 18%, transparent);
+
+  /* Neutrals — Apple-style light canvas */
+  --ink:#1D1D1F;        /* headings / primary text */
+  --body:#3F3F43;       /* paragraph text */
+  --muted:#86868B;      /* secondary text */
+  --faint:#AEAEB2;      /* faint captions */
+  --bg:#F4F4F6;         /* page canvas */
+  --card:#FFFFFF;       /* cards / surfaces */
+  --line:rgba(0,0,0,.07);
+  --line-2:rgba(0,0,0,.12);
+
+  /* Type — Thmanyah (ثمانية): elegant serif display + clean sans */
+  --serif:"Thmanyah Serif Display","Iowan Old Style",Palatino,"Noto Naskh Arabic",Georgia,serif;
+  --sans:"Thmanyah Sans",system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,Arial,sans-serif;
+
+  /* Shape & motion */
+  --r-sm:14px; --r:20px; --r-lg:26px; --r-xl:32px;
+  --sh-sm:0 1px 2px rgba(17,20,24,.05);
+  --sh:0 8px 26px rgba(17,20,24,.06);
+  --sh-lg:0 26px 60px rgba(17,20,24,.12);
+  --ease:cubic-bezier(.16,1,.3,1);
+
+  /* Colourful glassy gradient art (no images) — for icon tiles & pads */
+  --art1:radial-gradient(120% 120% at 0% 0%,#b69dff 0%,transparent 58%),radial-gradient(120% 120% at 100% 100%,#7db1ff 0%,transparent 55%),linear-gradient(135deg,#c9b8ff,#9cc4ff);
+  --art2:radial-gradient(120% 120% at 100% 0%,#ffa8b0 0%,transparent 60%),radial-gradient(120% 120% at 0% 100%,#ffc59a 0%,transparent 58%),linear-gradient(135deg,#ffd0cf,#ffb1a0);
+  --art3:radial-gradient(120% 120% at 0% 100%,#8be59b 0%,transparent 60%),radial-gradient(120% 120% at 100% 0%,#caf07f 0%,transparent 58%),linear-gradient(135deg,#bdf0c3,#8fe08a);
+  --art4:radial-gradient(120% 120% at 100% 100%,#7fd0fb 0%,transparent 60%),radial-gradient(120% 120% at 0% 0%,#a9b8ff 0%,transparent 58%),linear-gradient(135deg,#c2e7ff,#8fb6ff);
+  --art-hero:
+    radial-gradient(62% 80% at 18% 12%,rgba(136,153,112,.42),transparent 62%),
+    radial-gradient(58% 72% at 86% 16%,rgba(170,186,142,.40),transparent 62%),
+    radial-gradient(70% 80% at 74% 96%,rgba(118,138,96,.30),transparent 62%),
+    #eef1ea;
+}
