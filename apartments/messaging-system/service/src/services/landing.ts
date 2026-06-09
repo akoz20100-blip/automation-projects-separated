@@ -1,15 +1,22 @@
 /**
- * Dimora guest-guide landing page — light, editorial, reference-driven.
+ * Dimora guest-guide landing page — light, editorial, Apple-grade.
  *
- * Design language follows the owner's design references (see
- * `apartments/landing-page/DESIGN-SYSTEM.md`): an Apple-style LIGHT canvas with
- * generous whitespace, an elegant serif display + clean sans, a single CORAL
- * accent, colourful glassy gradient tiles, browser-style mock framing, a pill
- * segmented toggle, and a big-number highlights strip.
+ * Design language follows the Dimora design system (.claude/skills/dimora-design):
+ * an Apple-style LIGHT canvas with generous whitespace, Thmanyah serif display +
+ * clean sans, ONE sage-green accent, browser-style mock framing, a pill segmented
+ * toggle and a big-number highlights strip — now elevated with:
+ *
+ *  - a fixed glass local-nav (appears after the hero, scroll-spy highlights)
+ *  - a cinematic hero: Ken-Burns backdrop, staged reveals, gradient brand word,
+ *    and a soft parallax on the showcase mock
+ *  - staggered scroll-reveals for every grid (steps, services, rules, places)
+ *  - a swipeable snap-scroll photo gallery ("a look inside")
+ *  - a device-framed vertical check-in video
+ *  - a floating glass action dock on mobile (video + WhatsApp)
  *
  * Mobile-first, RTL Arabic-first, server-rendered HTML + inline CSS (no
  * framework, no build step, NO external fonts/assets). Linked from guest
- * WhatsApp messages.
+ * WhatsApp messages. All motion honours prefers-reduced-motion.
  *
  * Per-apartment fields come from the `Apartments` sheet row; all shared Dimora
  * content (brand, services, rules, nearby places, check-in steps, D1/D2 details)
@@ -49,6 +56,14 @@ function bi(ar: string, en: string): string {
   return `<span class="bi"><span class="ar">${escapeHtml(ar)}</span><span class="en" dir="auto">${escapeHtml(en)}</span></span>`;
 }
 
+/** Escape text, wrapping the first occurrence of the brand word in a gradient em. */
+function accentBrand(text: string, brand: string): string {
+  const i = text.toLowerCase().indexOf(brand.toLowerCase());
+  if (i === -1) return escapeHtml(text);
+  const word = text.slice(i, i + brand.length);
+  return `${escapeHtml(text.slice(0, i))}<em class="grad">${escapeHtml(word)}</em>${escapeHtml(text.slice(i + brand.length))}`;
+}
+
 const COPY = {
   ar: {
     dir: "rtl",
@@ -60,6 +75,8 @@ const COPY = {
     videoTitle: "فيديو طريقة الدخول",
     videoDesc: "شاهد الخطوات قبل الوصول لتسهيل الدخول.",
     videoFallback: "سيتم إضافة فيديو الدخول هنا",
+    galleryTitle: "جولة داخل الشقة",
+    galleryAlt: "من داخل ديمورا",
     infoTitle: "معلومات الشقة",
     wifi: "الواي فاي",
     wifiName: "اسم الشبكة",
@@ -86,6 +103,12 @@ const COPY = {
     imgSoon: "سيتم إضافة الصورة هنا",
     eyebrow: "إقامة بوتيكية في الرياض",
     mockTitle: "ديمورا · دليل الضيف",
+    navVideo: "الفيديو",
+    navCheckin: "الدخول",
+    navLocation: "الموقع",
+    navUnit: "وحدتك",
+    navInfo: "الخدمات",
+    navContact: "تواصل",
   },
   en: {
     dir: "ltr",
@@ -97,6 +120,8 @@ const COPY = {
     videoTitle: "Check-in Video",
     videoDesc: "Watch the steps before arrival for an easier check-in.",
     videoFallback: "The check-in video will be added here",
+    galleryTitle: "A Look Inside",
+    galleryAlt: "Inside Dimora",
     infoTitle: "Apartment Information",
     wifi: "Wi-Fi",
     wifiName: "Network",
@@ -123,6 +148,12 @@ const COPY = {
     imgSoon: "Image will be added here",
     eyebrow: "A boutique stay in Riyadh",
     mockTitle: "Dimora · Guest Guide",
+    navVideo: "Video",
+    navCheckin: "Check-in",
+    navLocation: "Location",
+    navUnit: "Your unit",
+    navInfo: "Amenities",
+    navContact: "Contact",
   },
 } as const;
 
@@ -152,12 +183,13 @@ const ICONS: Record<string, string> = {
   chevron: '<path d="m9 6 6 6-6 6"/>',
   shield: '<path d="M12 3 5 6v6c0 4 3 6.5 7 9 4-2.5 7-5 7-9V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/>',
+  photo: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4 3 2 4-3 4 4"/>',
 };
 
 const icon = (name: string, cls = "ic") =>
   `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] ?? ""}</svg>`;
 
-/** Section header: coral icon chip + serif Arabic title with muted English. */
+/** Section header: accent icon chip + serif Arabic title with muted English. */
 function secHead(iconName: string, ar: string, en: string, extra = ""): string {
   return `<div class="sec-head">
     <span class="chip">${icon(iconName, "chip-ic")}</span>
@@ -216,7 +248,22 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const checkInTime = apartment.default_check_in_time || guide.checkInTime;
   const checkOutTime = apartment.default_check_out_time || guide.checkOutTime;
 
-  // ---- Section 1: Hero (light, editorial) ----
+  // ---- Fixed glass local-nav (appears after the hero; scroll-spy) ----
+  const navItems: Array<[string, string]> = [
+    ["video", t.navVideo],
+    ["checkin", t.navCheckin],
+    ["unit", t.navUnit],
+    ["info", t.navInfo],
+    ["location", t.navLocation],
+    ["help", t.navContact],
+  ];
+  const lnav = `
+  <div class="lnav" id="lnav" aria-hidden="true">
+    <span class="lnav-brand">${escapeHtml(guide.brand.nameEn)}</span>
+    <nav>${navItems.map(([id, label]) => `<a href="#${id}">${escapeHtml(label)}</a>`).join("")}</nav>
+  </div>`;
+
+  // ---- Section 1: Hero (cinematic, light, editorial) ----
   const logo = guide.brand.logoUrl
     ? `<img class="logo" src="${escapeHtml(guide.brand.logoUrl)}" alt="${escapeHtml(brandName)}">`
     : `<span class="wordmark">${escapeHtml(guide.brand.nameEn)}</span>`;
@@ -226,15 +273,19 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
         t.mockTitle,
       )
     : "";
+  const welcome = accentBrand(
+    pick(lang, guide.brand.welcomeAr, guide.brand.welcomeEn),
+    pick(lang, guide.brand.nameAr, guide.brand.nameEn),
+  );
   const hero = `
   <header class="hero${heroBgUrl ? " hero--bg" : ""}"${heroBgUrl ? ` style="--hero-bg:url('${escapeHtml(heroBgUrl)}')"` : ""}>
     <div class="hero-inner">
       <div class="brandbar up" style="--d:.04s">${logo}</div>
-      <span class="eyebrow up" style="--d:.14s">${escapeHtml(t.eyebrow)}</span>
-      <h1 class="up" style="--d:.22s">${escapeHtml(pick(lang, guide.brand.welcomeAr, guide.brand.welcomeEn))}</h1>
-      <p class="lede up" style="--d:.32s">${escapeHtml(pick(lang, guide.brand.subtitleAr, guide.brand.subtitleEn))}</p>
-      <a class="btn up" style="--d:.42s" href="#video">${escapeHtml(t.cta)} ${icon("chevron", "btn-ic")}</a>
-      ${heroShowcase ? `<div class="showcase up" style="--d:.52s">${heroShowcase}</div>` : ""}
+      <span class="eyebrow up" style="--d:.16s">${escapeHtml(t.eyebrow)}</span>
+      <h1 class="up" style="--d:.26s">${welcome}</h1>
+      <p class="lede up" style="--d:.38s">${escapeHtml(pick(lang, guide.brand.subtitleAr, guide.brand.subtitleEn))}</p>
+      <a class="btn up" style="--d:.5s" href="#video">${escapeHtml(t.cta)} ${icon("chevron", "btn-ic")}</a>
+      ${heroShowcase ? `<div class="showcase up" style="--d:.62s"><div class="plx">${heroShowcase}</div></div>` : ""}
     </div>
   </header>`;
 
@@ -248,7 +299,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     </div>
   </section>`;
 
-  // ---- Section 2: Check-in video ----
+  // ---- Section 2: Check-in video (vertical Shorts get a device frame) ----
   const embed = videoUrl ? toEmbedUrl(videoUrl) : null;
   let videoBody: string;
   const isVertical = /youtube\.com\/shorts\//i.test(videoUrl);
@@ -283,7 +334,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   <section id="checkin" class="wrap reveal">
     ${secHead("door", COPY.ar.checkinTitle, COPY.en.checkinTitle)}
     <div class="way">${mockFrame(media(wayImg, pick(lang, "صورة توضيح المدخل والمواقف", "Entrance & parking guide"), t.imgSoon, "way-img"), t.mockTitle)}</div>
-    <div class="steps">${stepCards}</div>
+    <div class="steps stagger">${stepCards}</div>
     ${accessBody}
   </section>`;
 
@@ -291,7 +342,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const selBtn = (c: ApartmentCode) =>
     `<button type="button" class="seg${c === code ? " on" : ""}" data-code="${c}">${escapeHtml(guide.apartments[c].nameEn)}</button>`;
   const selector = `
-  <section class="wrap reveal" aria-label="${escapeHtml(t.selector)}">
+  <section id="unit" class="wrap reveal" aria-label="${escapeHtml(t.selector)}">
     <div class="seg-row"><div class="seg-wrap">${selBtn("D1")}${selBtn("D2")}</div></div>
     <div class="card unit-card">
       <span class="kicker">${escapeHtml(t.yourUnit)}</span>
@@ -307,9 +358,9 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     .map((s) => `<div class="svc"><span class="tile-ic">${icon(s.icon)}</span>${bi(s.ar, s.en)}</div>`)
     .join("");
   const info = `
-  <section class="wrap reveal">
+  <section id="info" class="wrap reveal">
     ${secHead("building", COPY.ar.infoTitle, COPY.en.infoTitle, ` <span class="apt-name">· ${escapeHtml(apartment.apartment_name)}</span>`)}
-    <div class="grid2">
+    <div class="grid2 stagger">
       <div class="card wifi">
         <div class="card-h"><span class="chip sm">${icon("wifi", "chip-ic")}</span><span>${escapeHtml(t.wifi)}</span></div>
         <div class="kv"><span>${escapeHtml(t.wifiName)}</span><b id="u-wifi-name">${escapeHtml(unit.wifiName || guide.wifi.name)}</b></div>
@@ -321,16 +372,31 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
       </div>
     </div>
     <h3 class="sub">${escapeHtml(t.services)}</h3>
-    <div class="svc-grid">${serviceCards}</div>
+    <div class="svc-grid stagger">${serviceCards}</div>
     ${apartment.building_info ? `<div class="card"><h3>${escapeHtml(t.buildingInfo)}</h3><p>${escapeHtml(apartment.building_info).replace(/\n/g, "<br>")}</p></div>` : ""}
   </section>`;
+
+  // ---- Gallery: swipeable snap-scroll photos ("a look inside") ----
+  const galleryImgs = guide.media.gallery.filter(Boolean);
+  const gallery = galleryImgs.length
+    ? `
+  <section id="gallery" class="wrap reveal">
+    ${secHead("photo", COPY.ar.galleryTitle, COPY.en.galleryTitle)}
+    <div class="gal stagger">${galleryImgs
+      .map(
+        (src, i) =>
+          `<figure class="gal-item"><img src="${escapeHtml(src)}" alt="${escapeHtml(t.galleryAlt)} ${i + 1}" loading="lazy" decoding="async"></figure>`,
+      )
+      .join("")}</div>
+  </section>`
+    : "";
 
   // ---- Section 6: House rules ----
   const ruleCards = guide.rules.map((r) => `<li>${bi(r.ar, r.en)}</li>`).join("");
   const rules = `
   <section class="wrap reveal">
     ${secHead("shield", COPY.ar.rulesTitle, COPY.en.rulesTitle)}
-    <ul class="rules">${ruleCards}</ul>
+    <ul class="rules stagger">${ruleCards}</ul>
     ${apartment.checkout_guideline ? `<div class="card"><h3>${escapeHtml(t.checkoutInfo)}</h3><p>${escapeHtml(apartment.checkout_guideline).replace(/\n/g, "<br>")}</p></div>` : ""}
   </section>`;
 
@@ -351,12 +417,13 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
   const nearby = `
   <section class="wrap reveal">
     ${secHead("pin", COPY.ar.nearbyTitle, COPY.en.nearbyTitle)}
-    <div class="cats">${cats}</div>
+    <div class="cats stagger">${cats}</div>
   </section>`;
 
   // ---- Section 8: Contact / help ----
-  const waBtn = guide.whatsapp
-    ? `<a class="btn wa" href="https://wa.me/${escapeHtml(guide.whatsapp.replace(/[^\d]/g, ""))}" target="_blank" rel="noopener">${icon("whatsapp", "btn-ic")} ${escapeHtml(t.whatsapp)}</a>`
+  const waLink = guide.whatsapp ? `https://wa.me/${escapeHtml(guide.whatsapp.replace(/[^\d]/g, ""))}` : "";
+  const waBtn = waLink
+    ? `<a class="btn wa" href="${waLink}" target="_blank" rel="noopener">${icon("whatsapp", "btn-ic")} ${escapeHtml(t.whatsapp)}</a>`
     : `<div class="btn wa disabled" aria-disabled="true">${icon("whatsapp", "btn-ic")} ${escapeHtml(t.whatsappSoon)}</div>`;
   const maint = apartment.maintenance_contact_phone
     ? `<a class="btn ghost" href="tel:${escapeHtml(apartment.maintenance_contact_phone)}">${icon("phone", "btn-ic")} ${escapeHtml(t.maintenance)}</a>`
@@ -369,10 +436,10 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     ? `<a class="btn ghost" href="${escapeHtml(guide.mapsUrl)}" target="_blank" rel="noopener">${icon("pin", "btn-ic")} ${escapeHtml(dirText)}</a>`
     : "";
   const help = `
-  <section class="wrap reveal contact">
+  <section id="help" class="wrap reveal contact">
     ${secHead("phone", COPY.ar.helpTitle, COPY.en.helpTitle)}
     <p class="sec-desc">${escapeHtml(pick(lang, COPY.ar.helpDesc, COPY.en.helpDesc))}</p>
-    <div class="actions">${waBtn}${maint}${dirBtn}</div>
+    <div class="actions stagger">${waBtn}${maint}${dirBtn}</div>
     ${emailLine}
   </section>`;
 
@@ -408,7 +475,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
     ),
   );
 
-  // Coral is the reference accent. A custom BRAND_PRIMARY_COLOR (anything other
+  // Sage green is the brand accent. A custom BRAND_PRIMARY_COLOR (anything other
   // than the legacy default) still overrides it, so the page stays themeable.
   const customPrimary =
     env.landing.brandPrimaryColor && env.landing.brandPrimaryColor !== "#0E7C66"
@@ -423,6 +490,7 @@ export function renderLandingPage(apartment: Apartment, lang: Language): string 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f4f4f6">
+<meta name="description" content="${escapeHtml(pick(lang, guide.brand.subtitleAr, guide.brand.subtitleEn))}">
 <title>${escapeHtml(brandName)} — ${escapeHtml(apartment.apartment_name)}</title>
 <style>
 ${FONT_CSS}
@@ -439,25 +507,50 @@ ${FONT_CSS}
     --sh-sm:0 1px 2px rgba(17,20,24,.05);
     --sh:0 8px 26px rgba(17,20,24,.06);
     --sh-lg:0 26px 60px rgba(17,20,24,.12);
-    /* Colourful glassy gradient art (no external images) */
-    --art1:radial-gradient(120% 120% at 0% 0%,#b69dff 0%,transparent 58%),radial-gradient(120% 120% at 100% 100%,#7db1ff 0%,transparent 55%),linear-gradient(135deg,#c9b8ff,#9cc4ff);
-    --art2:radial-gradient(120% 120% at 100% 0%,#ffa8b0 0%,transparent 60%),radial-gradient(120% 120% at 0% 100%,#ffc59a 0%,transparent 58%),linear-gradient(135deg,#ffd0cf,#ffb1a0);
-    --art3:radial-gradient(120% 120% at 0% 100%,#8be59b 0%,transparent 60%),radial-gradient(120% 120% at 100% 0%,#caf07f 0%,transparent 58%),linear-gradient(135deg,#bdf0c3,#8fe08a);
-    --art4:radial-gradient(120% 120% at 100% 100%,#7fd0fb 0%,transparent 60%),radial-gradient(120% 120% at 0% 0%,#a9b8ff 0%,transparent 58%),linear-gradient(135deg,#c2e7ff,#8fb6ff);
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
+  ::selection{background:var(--accent-ring)}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
   body{margin:0;background:var(--bg);
-    background-image:radial-gradient(60% 30% at 50% 0%,rgba(255,86,48,.05),transparent 70%),
-                     radial-gradient(50% 24% at 100% 4%,rgba(125,177,255,.10),transparent 70%);
+    background-image:radial-gradient(60% 30% at 50% 0%,rgba(136,153,112,.06),transparent 70%),
+                     radial-gradient(50% 24% at 100% 4%,rgba(125,177,255,.08),transparent 70%);
     background-attachment:fixed;color:var(--body);line-height:1.6;font-family:var(--sans);
     -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   img{max-width:100%;display:block}
-  .wrap{max-width:680px;margin:0 auto;padding:34px 20px}
-  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .wrap{max-width:680px;margin:0 auto;padding:40px 20px}
+  @media (min-width:560px){.wrap{padding:56px 24px}}
+  section[id]{scroll-margin-top:70px}
+
+  /* Scroll reveals — section-level + staggered children */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
   .reveal.in{opacity:1;transform:none}
-  .up{opacity:0;transform:translateY(18px);animation:up .85s var(--ease) forwards;animation-delay:var(--d,0s)}
+  .stagger>*{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .stagger.in>*{opacity:1;transform:none}
+  .stagger.in>*:nth-child(1){transition-delay:.05s}
+  .stagger.in>*:nth-child(2){transition-delay:.12s}
+  .stagger.in>*:nth-child(3){transition-delay:.19s}
+  .stagger.in>*:nth-child(4){transition-delay:.26s}
+  .stagger.in>*:nth-child(5){transition-delay:.33s}
+  .stagger.in>*:nth-child(6){transition-delay:.4s}
+  .stagger.in>*:nth-child(7){transition-delay:.47s}
+  .stagger.in>*:nth-child(8){transition-delay:.54s}
+  .up{opacity:0;transform:translateY(20px);animation:up .9s var(--ease) forwards;animation-delay:var(--d,0s)}
   @keyframes up{to{opacity:1;transform:none}}
+
+  /* Fixed glass local-nav (Apple product-page style) */
+  .lnav{position:fixed;top:0;inset-inline:0;z-index:70;display:flex;align-items:center;gap:10px;
+    padding:9px 16px;background:rgba(244,244,246,.8);
+    -webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px);
+    border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .5s var(--ease)}
+  .lnav.show{transform:none}
+  .lnav-brand{font-family:var(--serif);font-weight:700;letter-spacing:.24em;font-size:.8rem;color:var(--ink);white-space:nowrap;flex:none}
+  .lnav nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .lnav nav::-webkit-scrollbar{display:none}
+  .lnav a{flex:none;text-decoration:none;color:var(--muted);font-size:.82rem;font-weight:600;
+    padding:7px 13px;border-radius:999px;transition:color .25s,background .25s}
+  .lnav a:hover{color:var(--ink)}
+  .lnav a.on{background:var(--accent-soft);color:var(--accent-dk)}
 
   /* Colourful gradient pad + browser mock window */
   .pad{padding:16px;border-radius:var(--r-xl);position:relative;isolation:isolate}
@@ -466,7 +559,7 @@ ${FONT_CSS}
       radial-gradient(58% 72% at 86% 16%,rgba(170,186,142,.40),transparent 62%),
       radial-gradient(70% 80% at 74% 96%,rgba(118,138,96,.30),transparent 62%),
       #eef1ea}
-  .mock{border-radius:var(--r-lg);overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.7);box-shadow:var(--sh-lg)}
+  .mock{border-radius:var(--r-lg);overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.7);box-shadow:var(--sh-lg);margin:0}
   .mock-bar{display:flex;align-items:center;gap:7px;padding:11px 15px;background:#fbfbfd;border-bottom:1px solid var(--line)}
   .dot{width:11px;height:11px;border-radius:50%;flex:none}
   .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
@@ -474,20 +567,27 @@ ${FONT_CSS}
   .show-img{width:100%;aspect-ratio:16/10;object-fit:cover}
   .way-img{width:100%;height:auto;display:block}
 
-  /* Hero */
-  .hero{position:relative;overflow:hidden;padding:46px 20px 6px;text-align:center}
-  .hero.hero--bg::before{content:"";position:absolute;inset:0;z-index:0;background-image:var(--hero-bg);background-size:cover;background-position:center;filter:blur(3px) saturate(1.12);transform:scale(1.06);opacity:.6}
-  .hero.hero--bg::after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(244,244,246,.62),rgba(244,244,246,.40) 46%,rgba(244,244,246,.78) 86%,var(--bg))}
+  /* Hero — cinematic: Ken-Burns backdrop + light veil + staged reveal */
+  .hero{position:relative;overflow:hidden;padding:54px 20px 10px;text-align:center}
+  .hero.hero--bg::before{content:"";position:absolute;inset:-2%;z-index:0;background-image:var(--hero-bg);
+    background-size:cover;background-position:center;filter:blur(3px) saturate(1.12);opacity:.6;
+    transform:scale(1.06);animation:kb 26s var(--ease) infinite alternate}
+  @keyframes kb{from{transform:scale(1.06) translateY(0)}to{transform:scale(1.13) translateY(-1.6%)}}
+  .hero.hero--bg::after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(244,244,246,.62),rgba(244,244,246,.40) 46%,rgba(244,244,246,.80) 86%,var(--bg))}
   .hero-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
-  .brandbar{margin-bottom:18px}
+  .brandbar{margin-bottom:20px}
   .hero .logo{filter:brightness(0);opacity:.9;max-height:118px;width:auto;max-width:64%;margin:0 auto}
   .wordmark{font-family:var(--serif);font-size:1.7rem;font-weight:700;letter-spacing:.34em;color:var(--ink)}
-  .eyebrow{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
-    color:var(--accent);background:var(--accent-soft);padding:7px 15px;border-radius:999px;margin-bottom:16px}
-  .hero h1{font-family:var(--serif);font-size:clamp(2.3rem,8.4vw,3.3rem);margin:0 0 12px;font-weight:700;
-    line-height:1.08;letter-spacing:-.022em;color:var(--ink)}
-  .hero .lede{font-size:1.12rem;color:var(--muted);margin:0 auto 24px;max-width:34ch}
-  .showcase{margin-top:30px}
+  .eyebrow{display:inline-block;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+    color:var(--accent);background:var(--accent-soft);padding:7px 16px;border-radius:999px;margin-bottom:18px;
+    border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+  .hero h1{font-family:var(--serif);font-size:clamp(2.5rem,9vw,3.7rem);margin:0 0 14px;font-weight:700;
+    line-height:1.06;letter-spacing:-.024em;color:var(--ink)}
+  .hero h1 .grad{font-style:normal;background:linear-gradient(115deg,var(--accent-dk),var(--accent) 60%,color-mix(in srgb,var(--accent) 60%,#fff));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .lede{font-size:1.16rem;color:var(--muted);margin:0 auto 26px;max-width:36ch}
+  .showcase{margin-top:34px}
+  .plx{will-change:transform}
 
   /* Buttons */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
@@ -496,6 +596,7 @@ ${FONT_CSS}
     box-shadow:0 10px 24px var(--accent-ring),inset 0 1px 0 rgba(255,255,255,.4);
     transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s}
   .btn:hover{transform:translateY(-2px);filter:brightness(1.04);box-shadow:0 14px 30px var(--accent-ring),inset 0 1px 0 rgba(255,255,255,.4)}
+  .btn:active{transform:translateY(0) scale(.985)}
   .btn .btn-ic{width:18px;height:18px}
   html[dir=rtl] .btn .btn-ic{transform:scaleX(-1)}
   .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--sh-sm)}
@@ -503,28 +604,28 @@ ${FONT_CSS}
   .btn.wa{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 72%,#fff),var(--accent));box-shadow:0 10px 24px var(--accent-ring)}
   .btn.wa.disabled{background:#d6d6da;color:#fff;cursor:default;box-shadow:none}
 
-  /* Section heads (coral chip + serif two-tone) */
-  .sec-head{display:flex;align-items:flex-start;gap:13px;margin:0 0 16px}
+  /* Section heads (accent chip + serif two-tone) */
+  .sec-head{display:flex;align-items:flex-start;gap:13px;margin:0 0 18px}
   .chip{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;
     background:var(--accent-soft);color:var(--accent)}
   .chip.sm{width:34px;height:34px;border-radius:10px}
   .chip-ic{width:22px;height:22px}
   .chip.sm .chip-ic{width:18px;height:18px}
   .sec-text{min-width:0}
-  .sec-title{font-family:var(--serif);font-size:clamp(1.5rem,5.4vw,1.92rem);font-weight:700;
-    color:var(--ink);letter-spacing:-.02em;line-height:1.14;margin:0}
-  .sec-sub{display:block;color:var(--muted);font-size:.92rem;margin-top:3px}
+  .sec-title{font-family:var(--serif);font-size:clamp(1.6rem,6vw,2.15rem);font-weight:700;
+    color:var(--ink);letter-spacing:-.02em;line-height:1.12;margin:0}
+  .sec-sub{display:block;color:var(--muted);font-size:.92rem;margin-top:4px}
   .apt-name{font-family:var(--sans);font-size:.9rem;color:var(--muted);font-weight:500}
-  .sec-desc{color:var(--muted);margin:-6px 0 20px}
-  .sub{font-family:var(--serif);font-size:1.2rem;color:var(--ink);font-weight:700;margin:28px 0 14px;letter-spacing:-.01em}
+  .sec-desc{color:var(--muted);margin:-8px 0 22px}
+  .sub{font-family:var(--serif);font-size:1.24rem;color:var(--ink);font-weight:700;margin:30px 0 14px;letter-spacing:-.01em}
 
   /* Highlights strip (big numbers) */
   .stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border:1px solid var(--line);
     border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
-  .stat{padding:20px 12px;text-align:center;border-inline-end:1px solid var(--line)}
+  .stat{padding:22px 12px;text-align:center;border-inline-end:1px solid var(--line)}
   .stat:last-child{border-inline-end:0}
-  .stat b{font-family:var(--serif);font-size:1.75rem;color:var(--ink);display:block;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-  .stat span{color:var(--muted);font-size:.8rem;display:block;margin-top:2px}
+  .stat b{font-family:var(--serif);font-size:1.9rem;color:var(--ink);display:block;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .stat span{color:var(--muted);font-size:.8rem;display:block;margin-top:3px}
 
   /* Cards */
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:14px 0;box-shadow:var(--sh)}
@@ -532,6 +633,7 @@ ${FONT_CSS}
   .card h3{margin:0 0 8px;color:var(--ink);font-family:var(--serif);font-size:1.12rem;font-weight:700}
   .card p{margin:0;color:var(--body)}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid2 .card{margin:0}
   .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
   .kv:last-child{border-bottom:0}
   .kv span{color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-size:.92rem}
@@ -557,25 +659,36 @@ ${FONT_CSS}
   .unit-card .unit-name{margin:0 0 12px;color:var(--ink);font-family:var(--serif);font-size:1.34rem;font-weight:700;letter-spacing:-.01em}
   .unit-card .note{margin:12px 0 0;color:var(--muted);font-size:.92rem}
 
-  /* Check-in steps (feature grid + colourful tiles) */
+  /* Check-in steps (feature grid + accent tiles) */
   .way{margin:4px 0 18px}
   .steps{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 15px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
-  .step:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+  .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 15px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px;transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+  .step:hover{transform:translateY(-4px);box-shadow:var(--sh-lg)}
   .step .num{position:absolute;top:13px;inset-inline-end:14px;width:25px;height:25px;border-radius:50%;background:var(--accent);color:#fff;font-size:.8rem;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums;box-shadow:0 4px 10px var(--accent-ring)}
 
-  /* Colourful gradient icon tiles */
+  /* Accent gradient icon tiles */
   .tile-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;
     background:linear-gradient(150deg,color-mix(in srgb,var(--accent) 76%,#fff),var(--accent));
     box-shadow:inset 0 1px 2px rgba(255,255,255,.5),0 6px 16px rgba(17,20,24,.12)}
   .tile-ic .ic{width:22px;height:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
   .access{margin-top:16px;border-inline-start:3px solid var(--accent)}
 
-  /* Video */
+  /* Video — vertical Shorts get a light device frame */
   .video{position:relative;padding-top:56.25%;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000}
-  .video.vertical{max-width:330px;margin-inline:auto;padding-top:min(177.78%,586px)}
+  .video.vertical{max-width:330px;margin-inline:auto;padding-top:min(177.78%,586px);
+    border-radius:44px;border:10px solid #fff;
+    box-shadow:0 0 0 1px var(--line-2),0 34px 80px rgba(17,20,24,.2)}
   .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .video-el{width:100%;border-radius:var(--r-lg);box-shadow:var(--sh-lg);background:#000}
+
+  /* Gallery — swipeable snap-scroll */
+  .gal{display:grid;grid-auto-flow:column;grid-auto-columns:min(78%,420px);gap:14px;
+    overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 18px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .gal::-webkit-scrollbar{display:none}
+  .gal-item{margin:0;scroll-snap-align:center;border-radius:var(--r-lg);overflow:hidden;
+    border:1px solid var(--line);box-shadow:var(--sh-lg);background:#fff}
+  .gal-item img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .6s var(--ease)}
+  .gal-item:hover img{transform:scale(1.04)}
 
   /* Placeholders */
   .ph{background:#f3f3f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);border:1px dashed var(--line-2);text-align:center;padding:30px;aspect-ratio:16/10}
@@ -584,8 +697,8 @@ ${FONT_CSS}
 
   /* Services */
   .svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  .svc{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--sh);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
-  .svc:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+  .svc{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--sh);transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+  .svc:hover{transform:translateY(-4px);box-shadow:var(--sh-lg)}
 
   /* Rules */
   .rules{list-style:none;margin:0;padding:0;display:grid;gap:10px}
@@ -605,31 +718,41 @@ ${FONT_CSS}
   .contact-line .cl-ic{width:20px;height:20px;color:var(--accent);flex:none}
   .contact-line:hover{color:var(--ink)}
   .map-card{display:block;position:relative;margin:18px auto 0;max-width:520px;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh-lg);text-decoration:none}
-  .map-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .map-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;transition:transform .6s var(--ease)}
+  .map-card:hover .map-img{transform:scale(1.03)}
   .map-cta{position:absolute;inset-inline:14px;bottom:14px;display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 72%,#fff),var(--accent));color:#fff;font-weight:700;font-size:.98rem;padding:13px 18px;border-radius:14px;box-shadow:0 12px 26px var(--accent-ring)}
   .map-cta .btn-ic{width:18px;height:18px}
 
-  /* Floating quick action (mobile) */
-  .fab{position:fixed;inset-inline:0;bottom:0;display:none;justify-content:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(244,244,246,0),var(--bg) 42%);z-index:50}
-  .fab .btn{width:100%;max-width:520px}
+  /* Floating glass action dock (mobile) */
+  .dock{position:fixed;inset-inline:12px;bottom:12px;z-index:60;display:none;gap:10px;
+    padding:10px;border-radius:26px;background:rgba(255,255,255,.78);
+    -webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);
+    border:1px solid rgba(255,255,255,.65);box-shadow:var(--sh-lg)}
+  .dock .btn{flex:1;padding:13px 14px;font-size:.92rem;white-space:nowrap}
 
-  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:34px 18px 44px}
+  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:40px 18px 50px;border-top:1px solid var(--line);margin-top:24px}
   footer .logo{filter:brightness(0);opacity:.45;max-height:46px;width:auto;margin:0 auto 12px}
   footer .fnote{font-family:var(--serif);letter-spacing:.03em}
 
+  @media (max-width:560px){
+    .dock{display:flex}
+    body{padding-bottom:88px}
+  }
   @media (max-width:430px){
     .grid2{grid-template-columns:1fr}
-    .fab{display:flex}
-    body{padding-bottom:76px}
   }
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
-    .reveal,.up{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}
+    .reveal,.up,.stagger>*{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}
+    .hero.hero--bg::before{animation:none}
+    .plx{transform:none!important}
     .btn:hover,.svc:hover,.step:hover{transform:none}
+    .gal-item:hover img,.map-card:hover .map-img{transform:none}
   }
 </style>
 </head>
 <body>
+${lnav}
 ${hero}
 <main>
 ${video}
@@ -638,20 +761,55 @@ ${location}
 ${highlights}
 ${selector}
 ${info}
+${gallery}
 ${rules}
 ${nearby}
 ${help}
 </main>
-<div class="fab"><a class="btn" href="#video">${escapeHtml(t.cta)}</a></div>
+<div class="dock"><a class="btn" href="#video">${escapeHtml(t.cta)}</a>${waLink ? `<a class="btn wa" href="${waLink}" target="_blank" rel="noopener">${icon("whatsapp", "btn-ic")} ${escapeHtml(t.navContact)}</a>` : ""}</div>
 <footer>${logo}<div class="fnote">${escapeHtml(brandName)} · ${escapeHtml(apartment.apartment_name)}</div></footer>
 <script>
 (function(){
-  var els=document.querySelectorAll('.reveal');
-  if('IntersectionObserver' in window){
-    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+  var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Scroll reveals (sections + staggered grids).
+  var els=document.querySelectorAll('.reveal,.stagger');
+  if('IntersectionObserver' in window && !rm){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
     els.forEach(function(el){io.observe(el);});
   } else { els.forEach(function(el){el.classList.add('in');}); }
 
+  // Glass local-nav: show after the hero; scroll-spy the section links.
+  var nav=document.getElementById('lnav');
+  var hero=document.querySelector('.hero');
+  function onScroll(){
+    if(nav){var on=(window.scrollY||0)>((hero?hero.offsetHeight:520)-120);nav.classList.toggle('show',on);nav.setAttribute('aria-hidden',on?'false':'true');}
+  }
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+  if(nav&&'IntersectionObserver' in window){
+    var links={};nav.querySelectorAll('a[href^="#"]').forEach(function(a){links[a.getAttribute('href').slice(1)]=a;});
+    var spy=new IntersectionObserver(function(es){es.forEach(function(e){
+      var l=links[e.target.id];if(!l||!e.isIntersecting)return;
+      Object.keys(links).forEach(function(k){links[k].classList.remove('on');});l.classList.add('on');
+    });},{rootMargin:'-38% 0px -55% 0px'});
+    Object.keys(links).forEach(function(id){var s=document.getElementById(id);if(s)spy.observe(s);});
+  }
+
+  // Soft parallax on the hero showcase.
+  var plx=document.querySelector('.showcase .plx');
+  if(plx&&!rm){
+    var tick=false;
+    addEventListener('scroll',function(){
+      if(tick)return;tick=true;
+      requestAnimationFrame(function(){
+        var y=Math.min(window.scrollY||0,900);
+        plx.style.transform='translateY('+(y*-0.06).toFixed(1)+'px)';
+        tick=false;
+      });
+    },{passive:true});
+  }
+
+  // D1/D2 unit selector.
   var data=${unitData};
   function set(c){
     var d=data[c]; if(!d) return;
