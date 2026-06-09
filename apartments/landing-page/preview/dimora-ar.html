@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#f4f4f6">
+<meta name="theme-color" content="#f4f4f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="description" content="كل ما تحتاجه للدخول والإقامة بسهولة.">
 <title>ديمورا — Dimora D1 — Studio</title>
 <style>
@@ -265,6 +266,50 @@
     .plx{transform:none!important}
     .btn:hover,.svc:hover,.step:hover{transform:none}
     .gal-item:hover img,.map-card:hover .map-img{transform:none}
+  }
+
+  /* Automatic dark theme — true black (Thmanyah-style), applied only when the
+     guest's device is in dark mode. The content + sage accent pop on black;
+     light remains the default for daytime readability. No toggle, no JS. */
+  @media (prefers-color-scheme: dark){
+    :root{
+      --accent-dk:#C3D4A8;                    /* light sage for text/code on black */
+      --accent-soft:rgba(136,153,112,.18);
+      --accent-ring:rgba(136,153,112,.30);
+      --ink:#F5F5F7;--body:#C9C9CE;--muted:#98989D;--faint:#6E6E73;
+      --bg:#000000;--card:#131315;
+      --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.16);
+      --sh-sm:0 1px 2px rgba(0,0,0,.5);
+      --sh:0 8px 26px rgba(0,0,0,.45);
+      --sh-lg:0 26px 60px rgba(0,0,0,.6);
+    }
+    body{background:#000;
+      background-image:radial-gradient(60% 30% at 50% 0%,rgba(136,153,112,.10),transparent 70%),
+                       radial-gradient(50% 24% at 100% 4%,rgba(136,153,112,.05),transparent 70%)}
+    ::selection{background:rgba(136,153,112,.45)}
+    /* Hero: deeper veil over the photo + white logo */
+    .hero.hero--bg::after{background:linear-gradient(180deg,rgba(0,0,0,.58),rgba(0,0,0,.38) 46%,rgba(0,0,0,.84) 86%,#000)}
+    .hero.hero--bg::before{opacity:.55}
+    .hero .logo,footer .logo{filter:brightness(0) invert(1);opacity:.92}
+    .hero h1 .grad{background:linear-gradient(115deg,#E2EDCB,#A9BC8C 55%,#889970);-webkit-background-clip:text;background-clip:text}
+    /* Dark glass nav + dock */
+    .lnav{background:rgba(8,8,10,.72);border-bottom-color:rgba(255,255,255,.08)}
+    .dock{background:rgba(18,18,20,.78);border-color:rgba(255,255,255,.12)}
+    /* Elevated dark surfaces (mock window, pad, controls) */
+    .mock{background:#161618;border-color:rgba(255,255,255,.08)}
+    .mock-bar{background:#1B1B1D;border-bottom-color:rgba(255,255,255,.07)}
+    .pad.art-hero{background:
+      radial-gradient(62% 80% at 18% 12%,rgba(136,153,112,.30),transparent 62%),
+      radial-gradient(58% 72% at 86% 16%,rgba(136,153,112,.20),transparent 62%),
+      radial-gradient(70% 80% at 74% 96%,rgba(136,153,112,.16),transparent 62%),
+      #0E100A}
+    .btn.ghost{background:#1B1B1D;color:#F5F5F7;border-color:rgba(255,255,255,.16)}
+    .btn.ghost:hover{background:#222}
+    .seg-wrap{background:#1B1B1D;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+    .seg.on{background:#3A3A3C;color:#F5F5F7;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+    .ph{background:#131315}
+    .gal-item{background:#131315}
+    .video.vertical{border-color:#1F1F22;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 34px 80px rgba(0,0,0,.7)}
   }
 </style>
 </head>
