@@ -12,6 +12,7 @@ import { landingRouter } from "./routes/landing.js";
 import { webhooksRouter } from "./routes/webhooks.js";
 import { cronRouter } from "./routes/cron.js";
 import { telegramRouter } from "./routes/telegram.js";
+import { ttlockRouter } from "./routes/ttlock.js";
 
 export function createApp() {
   const app = express();
@@ -40,6 +41,7 @@ export function createApp() {
   app.use("/api/intake", requireAuth, intakeRouter);
   app.use("/api/reservations", requireAuth, reservationsRouter);
   app.use("/api/messages", requireAuth, messagesRouter);
+  app.use("/api/ttlock", requireAuth, ttlockRouter);
 
   app.use(notFound);
   app.use(errorHandler);

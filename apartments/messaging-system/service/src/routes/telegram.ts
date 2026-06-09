@@ -17,6 +17,7 @@ import { appendReservation } from "../services/sheets.js";
 import { tgSendMessage, downloadTelegramPhoto } from "../services/telegram.js";
 import { guide, resolveCode } from "../data/guestGuide.js";
 import { sendForReservation } from "./messages.js";
+import { ttlockEnabled, issueGuestPasscode } from "../services/ttlock.js";
 import type { Language, Reservation } from "../types.js";
 
 export const telegramRouter = Router();
@@ -146,6 +147,27 @@ telegramRouter.post("/webhook", async (req: Request, res: Response) => {
       door_code: ocr.extracted.door_code || "",
     };
 
+    // Issue a per-guest TTLock passcode (last 4 digits of the phone), valid from
+    // check-in (16:00) to checkout (12:00). The code is stored on the reservation
+    // so it appears in the guest's access message and in the sheet.
+    let lockNote = "";
+    if (ttlockEnabled()) {
+      try {
+        const issued = await issueGuestPasscode(reservation);
+        if (!issued) {
+          lockNote = "\n🔐 القفل: ما فيه قفل مربوط بهذه الوحدة (أضف معرّفه في TTLOCK_LOCKS).";
+        } else {
+          reservation.door_code = issued.passcode;
+          const tag = issued.mode === "custom" ? "آخر ٤ أرقام من الجوال" : "رمز مؤقت تلقائي";
+          lockNote =
+            `\n🔐 رمز القفل: ${issued.passcode} (${tag})` +
+            `\n   فعّال: ${reservation.check_in_date} ${reservation.check_in_time} ← ${reservation.check_out_date} ${reservation.check_out_time}`;
+        }
+      } catch (e) {
+        lockNote = "\n🔐 تعذّر إنشاء رمز القفل: " + (e as Error).message;
+      }
+    }
+
     await appendReservation(reservation);
 
     const base = env.landing.baseUrl.replace(/\/$/, "");
@@ -165,6 +187,7 @@ telegramRouter.post("/webhook", async (req: Request, res: Response) => {
           : ""),
     );
     lines.push(`📅 ${reservation.check_in_date || "—"} ← ${reservation.check_out_date || "—"}`);
+    if (lockNote) lines.push(lockNote);
     if (ocr.warnings.length) lines.push("\n⚠️ " + ocr.warnings.join("\n⚠️ "));
     lines.push(`\n🔗 صفحة الضيف:\n${landing}`);
 

@@ -6,6 +6,7 @@ import {
   yesterdayInTz,
   isCheckoutAfterCheckin,
   dueCheckoutDate,
+  epochMsInTz,
 } from "../src/domain/dates.js";
 
 const TZ = "Asia/Riyadh";
@@ -34,6 +35,17 @@ describe("isCheckoutAfterCheckin", () => {
     expect(isCheckoutAfterCheckin("2026-06-10", "2026-06-13")).toBe(true);
     expect(isCheckoutAfterCheckin("2026-06-10", "2026-06-10")).toBe(false);
     expect(isCheckoutAfterCheckin("2026-06-13", "2026-06-10")).toBe(false);
+  });
+});
+
+describe("epochMsInTz", () => {
+  it("converts a Riyadh (UTC+3) wall-clock time to epoch ms", () => {
+    // Check-in 16:00 Riyadh == 13:00 UTC; checkout 12:00 Riyadh == 09:00 UTC.
+    expect(epochMsInTz("2026-06-10", "16:00", TZ)).toBe(Date.parse("2026-06-10T13:00:00Z"));
+    expect(epochMsInTz("2026-06-13", "12:00", TZ)).toBe(Date.parse("2026-06-13T09:00:00Z"));
+  });
+  it("matches plain UTC for the UTC zone", () => {
+    expect(epochMsInTz("2026-06-10", "16:00", "UTC")).toBe(Date.parse("2026-06-10T16:00:00Z"));
   });
 });
 

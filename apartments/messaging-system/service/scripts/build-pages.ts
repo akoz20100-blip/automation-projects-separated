@@ -59,6 +59,11 @@ async function main() {
   // Wayfinding is now shown full-size, so encode it sharper.
   map.set(guide.media.wayfindingImageUrl, await photoUri(basename(guide.media.wayfindingImageUrl), 1280, 78));
   map.set(guide.media.mapImageUrl, await photoUri(basename(guide.media.mapImageUrl), 1000, 72));
+  // Gallery photos (carousel cards are <=420px wide; skip URLs already inlined
+  // above so e.g. the hero backdrop keeps its higher-quality encode).
+  for (const g of guide.media.gallery) {
+    if (g && !map.has(g)) map.set(g, await photoUri(basename(g), 800, 64));
+  }
 
   const inline = (html: string): string => {
     for (const [url, uri] of map) html = html.split(url).join(uri);
