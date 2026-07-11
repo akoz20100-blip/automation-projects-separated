@@ -4,9 +4,11 @@
 
 ## المستودع والفرع
 - Repo: `akoz20100-blip/automation-projects-separated` (Public).
-- فرع العمل: `claude/youthful-gates-QgDBw` → **Draft PR #4** (كل الشغل هنا).
-- صفحة Pages المنشورة: تُحدّث تلقائياً عند كل push للفرع من مجلد `/docs`:
+- **كل الشغل مدموج في `main`** — دُمجت PR ‏#1 (النظام) و‏#4 (الصور) و‏#5 (TTLock)
+  و‏#6 (الثيم الداكن) بتاريخ 2026-06-08/09. أي شغل جديد: افرع من `main` مباشرة.
+- صفحة Pages المنشورة تُخدَم من مجلد `/docs` على `main`:
   **https://akoz20100-blip.github.io/automation-projects-separated/**
+- فهرس كل المشاريع والريبوهات: انظر ريبو [`workspace`](https://github.com/akoz20100-blip/workspace).
 
 ## ✅ المُنجَز
 - **التصميم (معتمد):** فاتح أبل-ستايل + **أخضر سَيج `#889970` (لون شعار ديمورا)** كلون
