@@ -4,7 +4,7 @@
 
 ## المستودع والفرع
 - Repo: `akoz20100-blip/automation-projects-separated` (Public).
-- فرع العمل: `claude/youthful-gates-QgDBw` → **Draft PR #4** (كل الشغل هنا).
+- فرع العمل المعتمد: **`main`**. عمل `claude/youthful-gates-QgDBw` مدموج بالفعل؛ ابدأ من `main`.
 - صفحة Pages المنشورة: تُحدّث تلقائياً عند كل push للفرع من مجلد `/docs`:
   **https://akoz20100-blip.github.io/automation-projects-separated/**
 
